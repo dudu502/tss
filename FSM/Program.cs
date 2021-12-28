@@ -62,18 +62,16 @@ namespace FSM
             // start machine
             machine.Start(State.Idle);
             // update machine
-            ThreadPool.QueueUserWorkItem(ob =>
-            {      
-                while (true)
-                {
-                    machine.Update();
-                    Thread.Sleep(100);
-                }
-            }, null);
-
-            // stop machine
-            Console.ReadKey();
+            bool running = true;
+            ThreadPool.QueueUserWorkItem(_ => { var key = Console.ReadKey(); running = false; });
+            while (running)
+            {
+                machine.Update();
+                Thread.Sleep(100);
+            }
+       
             machine.Stop();
+            Console.WriteLine("FSM Stop");
         }
         
     }
