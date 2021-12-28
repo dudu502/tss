@@ -4,32 +4,35 @@ using System.Text;
 
 namespace FSM
 {
-    public class State
+    public class State<T> where T:Enum
     {
-        public List<Translation> Translations { private set; get; }
+        public List<Translation<T>> Translations { private set; get; }
         private Action m_OnInitialize;
         private Action m_OnEnter;
         private Action m_OnUpdate;
         private Action m_OnExit;
-        public string Name { set; get; }
+        public T Name { set; get; }
 
         public State()
         {
-            Translations = new List<Translation>();
+            Translations = new List<Translation<T>>();
         }
 
-        
-        public Translation Translate(string translationName)
+        public Translation<T> Translate()
         {
-            Translation translation = new Translation(this);
+            return Translate(string.Empty);
+        }
+        public Translation<T> Translate(string translationName)
+        {
+            Translation<T> translation = new Translation<T>(this);
             translation.Name = translationName;
             Translations.Add(translation);
             return translation;
         }
-        public State Initialize(Action init) { m_OnInitialize = init; return this; }
-        public State Enter(Action enter) { m_OnEnter = enter; return this; }
-        public State Update(Action update) { m_OnUpdate = update; return this; }
-        public State Exit(Action exit) { m_OnExit = exit; return this; }
+        public State<T> Initialize(Action init) { m_OnInitialize = init; return this; }
+        public State<T> Enter(Action enter) { m_OnEnter = enter; return this; }
+        public State<T> Update(Action update) { m_OnUpdate = update; return this; }
+        public State<T> Exit(Action exit) { m_OnExit = exit; return this; }
         public void OnInitialize()
         {
             m_OnInitialize?.Invoke();

@@ -4,23 +4,23 @@ using System.Text;
 
 namespace FSM
 {
-    public class Translation
+    public class Translation<T>where T:Enum
     {
         public string Name { set; get; }
         private Func<bool> m_Valid;
         private Action m_Transfer;
-        public string ToStateName { private set; get; }
-        private State m_Current;
-        public Translation(State state)
+        public T ToStateName { private set; get; }
+        private readonly State<T> m_Current;
+        public Translation(State<T> state)
         {
             m_Current = state;
         }
-        public Translation Valid(Func<bool> valid)
+        public Translation<T> Valid(Func<bool> valid)
         {
             m_Valid = valid;
             return this;
         }
-        public State To(string stateName)
+        public State<T> To(T stateName)
         {
             ToStateName = stateName;
             return m_Current;
@@ -31,7 +31,7 @@ namespace FSM
                 return m_Valid();
             return false;
         }
-        public Translation Transfer(Action transfer)
+        public Translation<T> Transfer(Action transfer)
         {
             m_Transfer = transfer;
             return this;
@@ -40,6 +40,5 @@ namespace FSM
         {
             m_Transfer?.Invoke();
         }
-
     }
 }

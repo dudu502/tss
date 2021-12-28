@@ -5,17 +5,23 @@ namespace FSM
 {
     class Program
     {
-        static void Main(string[] args)
+        enum State
         {
+            Idle,
+            Patrol,
+            Escape
+        }
+        static void Main(string[] args)
+        {     
             // Create a state machine
-            var machine = new StateMachine();
+            var machine = new StateMachine<State>();
             int timer = 0;
             const int maxTimerCount = 10;
 
             int timer1 = 0;
             const int maxTimer1Count = 20;
             // add new state
-            machine.NewState("空闲")
+            machine.NewState(State.Idle)
                  .Initialize(() => Console.WriteLine("初始化 空闲"))
                  .Enter(() =>
                  {
@@ -24,9 +30,9 @@ namespace FSM
                  })
                  .Update(() => Console.WriteLine("空闲... " + timer++))
                  .Exit(() => Console.WriteLine("退出 空闲"))
-                 .Translate("空闲=>巡逻").Valid(() => timer >= maxTimerCount).Transfer(() => Console.WriteLine("转化中 ...")).To("巡逻");
+                 .Translate("空闲=>巡逻").Valid(() => timer >= maxTimerCount).Transfer(() => Console.WriteLine("转化中 ...")).To(State.Patrol);
 
-            machine.NewState("巡逻")
+            machine.NewState(State.Patrol)
                 .Initialize(() => Console.WriteLine("初始化 巡逻"))
                 .Enter(() =>
                 {
@@ -35,10 +41,10 @@ namespace FSM
                 })
                 .Update(() => Console.WriteLine("巡逻... " + timer++ + " 危险系数" + timer1++))
                 .Exit(() => Console.WriteLine("退出 巡逻"))
-                .Translate("巡逻=>逃跑").Valid(() => timer1 > maxTimer1Count).To("逃跑")
-                .Translate("巡逻=>空闲").Valid(() => timer >= maxTimerCount).Transfer(() => Console.WriteLine("转化中 ...")).To("空闲");
+                .Translate("巡逻=>逃跑").Valid(() => timer1 > maxTimer1Count).To(State.Escape)
+                .Translate("巡逻=>空闲").Valid(() => timer >= maxTimerCount).Transfer(() => Console.WriteLine("转化中 ...")).To(State.Idle);
 
-            machine.NewState("逃跑")
+            machine.NewState(State.Escape)
                .Initialize(() => Console.WriteLine("初始化 逃跑"))
                .Enter(() =>
                {
@@ -47,23 +53,22 @@ namespace FSM
                })
                .Update(() => Console.WriteLine("逃跑... " + timer1--))
                .Exit(() => Console.WriteLine("退出 逃跑"))
-               .Translate("逃跑=>空闲").Valid(() => timer1 == 0).Transfer(() => Console.WriteLine("转化中 ...")).To("空闲");
+               .Translate("逃跑=>空闲").Valid(() => timer1 == 0).Transfer(() => Console.WriteLine("转化中 ...")).To(State.Idle);
 
             
 
             //initialize machine
-            machine.Initialize();
-
+            machine.Initialize();      
             // start machine
+            machine.Start(State.Idle);
+            // update machine
             ThreadPool.QueueUserWorkItem(ob =>
-            {
-                machine.Start("空闲");
+            {      
                 while (true)
                 {
                     machine.Update();
                     Thread.Sleep(100);
                 }
-
             }, null);
 
             // stop machine

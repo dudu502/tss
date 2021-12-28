@@ -4,17 +4,17 @@ using System.Text;
 
 namespace FSM
 {
-    public class StateMachine
+    public class StateMachine<T> where T:Enum
     {
-        private List<State> m_States;
-        private State m_CurrentActiveState;
+        private List<State<T>> m_States;
+        private State<T> m_CurrentActiveState;
         private bool m_Running = false;
         public StateMachine()
         {
             m_CurrentActiveState = null;
-            m_States = new List<State>();
+            m_States = new List<State<T>>();
         }
-        public void Start(string startStateName)
+        public void Start(T startStateName)
         {
             m_Running = true;
             m_CurrentActiveState = Find(startStateName);
@@ -24,23 +24,23 @@ namespace FSM
         {
             m_Running = false;
         }
-        public State NewState(string stateName)
+        public State<T> NewState(T stateName)
         {
-            State state = new State();
+            State<T> state = new State<T>();
             state.Name = stateName;
             m_States.Add(state);
             return state;
         }
         public void Initialize()
         {
-            foreach (State state in m_States)
+            foreach (State<T> state in m_States)
                 state.OnInitialize();
         }
-        private State Find(string stateName)
+        private State<T> Find(T stateName)
         {
-            foreach(State state in m_States)
+            foreach(State<T> state in m_States)
             {
-                if (state.Name == stateName)
+                if(Enum.Equals(state.Name,stateName))
                     return state;
             }
             throw new Exception($"{stateName} is not exist! Please call NewState to create this state");
@@ -49,7 +49,7 @@ namespace FSM
         {
             if (m_Running && m_CurrentActiveState != null)
             {
-                foreach (Translation translation in m_CurrentActiveState.Translations)
+                foreach (Translation<T> translation in m_CurrentActiveState.Translations)
                 {
                     if (translation.OnValid())
                     {
