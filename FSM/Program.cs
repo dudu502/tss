@@ -30,7 +30,7 @@ namespace FSM
                  })
                  .Update(() => Console.WriteLine("空闲... " + timer++))
                  .Exit(() => Console.WriteLine("退出 空闲"))
-                 .Translate("空闲=>巡逻").Valid(() => timer >= maxTimerCount).Transfer(() => Console.WriteLine("转化中 ...")).To(State.Patrol);
+                 .Translate(() => timer >= maxTimerCount).Transfer(() => Console.WriteLine("转化中 ...")).To(State.Patrol);
 
             machine.NewState(State.Patrol)
                 .Initialize(() => Console.WriteLine("初始化 巡逻"))
@@ -41,8 +41,8 @@ namespace FSM
                 })
                 .Update(() => Console.WriteLine("巡逻... " + timer++ + " 危险系数" + timer1++))
                 .Exit(() => Console.WriteLine("退出 巡逻"))
-                .Translate("巡逻=>逃跑").Valid(() => timer1 > maxTimer1Count).To(State.Escape)
-                .Translate("巡逻=>空闲").Valid(() => timer >= maxTimerCount).Transfer(() => Console.WriteLine("转化中 ...")).To(State.Idle);
+                .Translate(() => timer1 > maxTimer1Count).To(State.Escape)
+                .Translate(() => timer >= maxTimerCount).Transfer(() => Console.WriteLine("转化中 ...")).To(State.Idle);
 
             machine.NewState(State.Escape)
                .Initialize(() => Console.WriteLine("初始化 逃跑"))
@@ -53,7 +53,7 @@ namespace FSM
                })
                .Update(() => Console.WriteLine("逃跑... " + timer1--))
                .Exit(() => Console.WriteLine("退出 逃跑"))
-               .Translate("逃跑=>空闲").Valid(() => timer1 == 0).Transfer(() => Console.WriteLine("转化中 ...")).To(State.Idle);
+               .Translate(() => timer1 == 0).Transfer(() => Console.WriteLine("转化中 ...")).To(State.Idle);
 
             
 

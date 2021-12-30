@@ -7,18 +7,14 @@ namespace FSM
     public class Translation<T>where T:Enum
     {
         public string Name { set; get; }
-        private Func<bool> m_Valid;
+        private readonly Func<bool> m_Valid;
         private Action m_Transfer;
         public T ToStateName { private set; get; }
         private readonly State<T> m_Current;
-        public Translation(State<T> state)
+        public Translation(State<T> state,Func<bool> valid)
         {
             m_Current = state;
-        }
-        public Translation<T> Valid(Func<bool> valid)
-        {
             m_Valid = valid;
-            return this;
         }
         public State<T> To(T stateName)
         {

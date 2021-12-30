@@ -18,14 +18,10 @@ namespace FSM
             
         }
 
-        public Translation<T> Translate()
+
+        public Translation<T> Translate(Func<bool> valid)
         {
-            return Translate(string.Empty);
-        }
-        public Translation<T> Translate(string translationName)
-        {
-            Translation<T> translation = new Translation<T>(this);
-            translation.Name = translationName;
+            Translation<T> translation = new Translation<T>(this,valid);
             Translations.Add(translation);
             return translation;
         }
