@@ -6,7 +6,7 @@ namespace FSM
 {
     public class State<T> where T:Enum
     {
-        public List<Translation<T>> Translations { private set; get; }
+        public readonly List<Translation<T>> Translations = new List<Translation<T>>();
         private Action m_OnInitialize;
         private Action m_OnEnter;
         private Action m_OnUpdate;
@@ -15,7 +15,7 @@ namespace FSM
 
         public State()
         {
-            Translations = new List<Translation<T>>();
+            
         }
 
         public Translation<T> Translate()
