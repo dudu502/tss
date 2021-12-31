@@ -2,6 +2,7 @@
 using BT.Composite;
 using BT.Decorator;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace BT
@@ -11,34 +12,30 @@ namespace BT
         static void Main(string[] args)
         {
             BehaviourTree tree = new BehaviourTree();
-            RepeatNode repeat = new RepeatNode();
 
-            SequencerNode sequencer = new SequencerNode();
-            tree.SetChild(repeat);
-            repeat.Child = sequencer;
+            RepeatNode repeatNode = new RepeatNode();
 
-            sequencer.Children.Add(new DebugNode() { message = "seq-001" });
-            sequencer.Children.Add(new DebugNode() { message = "seq-002" });
-            sequencer.Children.Add(new DebugNode() { message = "seq-003" });
+            SequencerNode sequencerNode = new SequencerNode();
+            tree.SetChild(repeatNode);
+            repeatNode.Child = sequencerNode;
+            DebugNode hungry = new DebugNode() { message = "Hungry?" };
+            sequencerNode.Children.Add(hungry);
+
+            DebugNode yesHungry = new DebugNode() { message = "yes , very hungry" }; 
+            sequencerNode.Children.Add(yesHungry);
 
             SelectorNode select = new SelectorNode();
-            select.Children.Add(new DebugNode() { message = "select-001" });
-            select.Children.Add(new DebugNode() { message = "select-002" });
-            select.Children.Add(new DebugNode() { message = "select-003" });
-            sequencer.Children.Add(select);
-            ParallelNode parallel = new ParallelNode();
+            
+            select.Children.Add(new DebugNode() { message = "eat apple" });
+            select.Children.Add(new DebugNode() { message = "eat banana"});
 
-            parallel.Children.Add(new DebugNode() { message = "par-001", State = Node.NodeResult.Success });
-            parallel.Children.Add(new DebugNode() { message = "par-002", State = Node.NodeResult.Success });
-            parallel.Children.Add(new DebugNode() { message = "par-003", State = Node.NodeResult.Success });
-            sequencer.Children.Add(parallel);
+            sequencerNode.Children.Add(select);
 
             while (true)
             {
                 tree.Execute();
                 Thread.Sleep(1000);
             }
-
             Console.WriteLine("Hello World!");
         }
     }

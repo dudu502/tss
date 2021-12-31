@@ -6,18 +6,6 @@ using System.Text;
 
 namespace BT
 {
-    //public interface IFlow
-    //{
-    //    IFlow Sequence();
-    //    IFlow Repeat();
-    //    IFlow Selector();
-    //    IFlow Parallel();
-
-    //    IFlow Start(System.Action start);
-    //    IFlow Stop(System.Action stop);
-    //    IFlow Update(System.Func<Node.NodeResult> update);
-    //}
-
     public class BehaviourTree
     {
         private readonly RootNode m_Root = new RootNode();

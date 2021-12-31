@@ -35,9 +35,6 @@ namespace BT
         protected abstract void OnStart();
         protected abstract NodeResult OnUpdate();
         protected abstract void OnStop();
-
-
-
     }   
 
     public class RootNode : Node

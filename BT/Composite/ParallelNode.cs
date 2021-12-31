@@ -6,8 +6,6 @@ namespace BT.Composite
 {
     public class ParallelNode: CompositeNode
     {
-
-
         protected override void OnStart()
         {
 
@@ -22,9 +20,7 @@ namespace BT.Composite
         {
             NodeResult state = NodeResult.Success;
             foreach (Node child in Children)
-            {
                 state |= child.Execute();
-            }
             if ((state & NodeResult.Failure) == NodeResult.Failure)
                 return NodeResult.Failure;
             else if ((state & NodeResult.Continue) == NodeResult.Continue)
