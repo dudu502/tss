@@ -1,11 +1,10 @@
-﻿using BT.Actions;
-using BT.Composite;
-using BT.Decorator;
+﻿
 using System;
-using System.Collections.Generic;
-using System.Text;
+using Task.Switch.Structure.BT.Actions;
+using Task.Switch.Structure.BT.Composites;
+using Task.Switch.Structure.BT.Decorators;
 
-namespace BT
+namespace Task.Switch.Structure.BT
 {
     public class BehaviourTree
     {
@@ -51,6 +50,10 @@ namespace BT
         public WaitNode Wait(int ms,Node.NodeResult waitResult = Node.NodeResult.Success)
         {
             return AddNodeToTree(new WaitNode(ms, waitResult)) as WaitNode;
+        }
+        public WaitFrameNode WaitFrame(int frameCount,Node.NodeResult waitResult = Node.NodeResult.Success)
+        {
+            return AddNodeToTree(new WaitFrameNode(frameCount, waitResult)) as WaitFrameNode;
         }
         public WaitUntilNode WaitUntil(Func<bool> waitFunc,Node.NodeResult nodeResult = Node.NodeResult.Success)
         {   

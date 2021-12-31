@@ -1,25 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace BT.Composite
+﻿
+namespace Task.Switch.Structure.BT.Composites
 {
     public class ParallelNode: CompositeNode
     {
-        protected override void OnStart()
-        {
-
-        }
-
-        protected override void OnStop()
-        {
-
-        }
-
-        protected override NodeResult OnUpdate()
+        protected override NodeResult GetResult()
         {
             NodeResult state = NodeResult.Success;
-            foreach (Node child in Children)
+            foreach (Node child in m_Children)
                 state |= child.Execute();
             if ((state & NodeResult.Failure) == NodeResult.Failure)
                 return NodeResult.Failure;
@@ -27,7 +14,5 @@ namespace BT.Composite
                 return NodeResult.Continue;
             return NodeResult.Success;
         }
-
-
     }
 }

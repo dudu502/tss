@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace FSM
+namespace Task.Switch.Structure.FSM
 {
     public class State<T> where T:Enum
     {

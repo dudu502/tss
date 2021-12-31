@@ -1,12 +1,8 @@
-﻿using BT.Composite;
-using BT.Decorator;
+﻿
 using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace BT
+namespace Task.Switch.Structure.BT
 {
-
     public abstract class Node
     {
         public enum NodeResult
@@ -15,9 +11,19 @@ namespace BT
             Failure = 2,
             Success = 4
         }
+        public BehaviourTree Tree;
         public NodeResult Result { private set; get; } = NodeResult.Continue;
         private bool m_Started = false;
-        public BehaviourTree Tree;
+       
+        protected Action m_Start;
+        protected Action m_Stop;
+        protected Action m_Update;
+        protected Func<NodeResult> m_NodeResult;
+        public Node Start(Action start) { m_Start = start; return this; }
+        public Node Stop(Action stop) { m_Stop = stop; return this; }
+        public Node Update(Action update) { m_Update = update; return this; }
+
+        public Node GetResult(Func<NodeResult> result) { m_NodeResult = result; return this; }
         public NodeResult Execute()
         {
             if (!m_Started)
@@ -25,7 +31,8 @@ namespace BT
                 OnStart();
                 m_Started = true;
             }
-            Result = OnUpdate();    
+            OnUpdate();
+            Result = GetResult();    
             if(Result == NodeResult.Success||Result == NodeResult.Failure)
             {
                 OnStop();
@@ -33,35 +40,37 @@ namespace BT
             }
             return Result;
         }
-      
-        protected abstract void OnStart();
-        protected abstract NodeResult OnUpdate();
-        protected abstract void OnStop();
+        public BehaviourTree End()
+        {
+            return Tree;
+        }
+        protected virtual void OnStart() 
+        {
+            m_Start?.Invoke();
+        }
+        protected virtual void OnUpdate() 
+        {
+            m_Update?.Invoke();
+        }
+        protected abstract NodeResult GetResult();
+        protected virtual void OnStop() 
+        {
+            m_Stop?.Invoke();
+        }    
     }   
 
     public class RootNode : Node
     {
-        protected Node Child;
+        private Node m_Child;
 
         public void SetChild(Node node)
         {
-            Child = node;
+            m_Child = node;
         }
-        protected override void OnStart()
+
+        protected override NodeResult GetResult()
         {
-            
+            return m_Child.Execute();
         }
-
-        protected override void OnStop()
-        {
-            
-        }
-
-        protected override NodeResult OnUpdate()
-        {
-            return Child.Execute();
-        }
-
-
     }
 }

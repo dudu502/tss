@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BT.Actions
+namespace Task.Switch.Structure.BT.Actions
 {
     public class WaitUntilNode : ActionNode
     {
@@ -13,17 +13,9 @@ namespace BT.Actions
             m_WaitUntilFunc = waitUntil;
             m_WaitResult = waitResult;
         }
-        protected override void OnStart()
-        {
-            
-        }
 
-        protected override void OnStop()
-        {
-            
-        }
 
-        protected override NodeResult OnUpdate()
+        protected override NodeResult GetResult()
         {
             if (m_WaitUntilFunc())
                 return m_WaitResult;

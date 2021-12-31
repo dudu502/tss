@@ -1,25 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace BT.Composite
+﻿namespace Task.Switch.Structure.BT.Composites
 {
     public class SelectorNode:CompositeNode
     {
-        int current;
+        int m_CurrentIndex;
         protected override void OnStart()
         {
-            current = 0;
+            base.OnStart();
+            m_CurrentIndex = 0;
         }
 
-        protected override void OnStop()
+        protected override NodeResult GetResult()
         {
-
-        }
-
-        protected override NodeResult OnUpdate()
-        {
-            var child = Children[current];
+            var child = m_Children[m_CurrentIndex];
             switch (child.Execute())
             {
                 case NodeResult.Continue:
@@ -27,10 +19,10 @@ namespace BT.Composite
                 case NodeResult.Success:
                     return NodeResult.Success;
                 case NodeResult.Failure:
-                    current++;
+                    m_CurrentIndex++;
                     break;
             }
-            return current == Children.Count ? NodeResult.Failure : NodeResult.Continue;
+            return m_CurrentIndex == m_Children.Count ? NodeResult.Failure : NodeResult.Continue;
         }
     }
 }

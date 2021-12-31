@@ -1,11 +1,9 @@
-﻿using BT.Actions;
-using BT.Composite;
-using BT.Decorator;
+﻿
 using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace BT
+namespace Task.Switch.Structure.BT
 {
     class Program
     {
@@ -18,10 +16,10 @@ namespace BT
                                     .Do()
                                         .Start(() => Console.WriteLine("Start Hungry?"))
                                         .Update(() =>
-                                            {
-                                                Console.WriteLine("Update Hungry?");
-                                                return Node.NodeResult.Success;
-                                            })
+                                        {
+                                            Console.WriteLine("Update Hungry?");
+                    
+                                        })
                                         .Stop(() => Console.WriteLine("Stop Hungry?"))
                                         .End()
                                     .Do()
@@ -29,20 +27,21 @@ namespace BT
                                         .Update(() =>
                                         {
                                             Console.WriteLine("Yes,Update Very Hungry");
-                                            return Node.NodeResult.Success;
+                                   
                                         })
                                         .Stop(() => Console.WriteLine("Yes,Stop Very Hungry"))
                                         .End()
                                     .Select()
-                                        .Wait(2000,Node.NodeResult.Failure)
+                                        .WaitFrame(1,Node.NodeResult.Failure)
                                             .End()
                                         .Do()
                                             .Start(() => Console.WriteLine("Start Eat apple"))
                                             .Update(() =>
                                             {
                                                 Console.WriteLine("Update Eat apple");
-                                                return Node.NodeResult.Success;
+                                     
                                             })
+                                            .GetResult(() => Node.NodeResult.Failure)
                                             .Stop(() => Console.WriteLine("Stop Eat apple"))
                                             .End()
                                         .Do()
@@ -50,7 +49,7 @@ namespace BT
                                             .Update(() =>
                                             {
                                                 Console.WriteLine("Update Eat banana");
-                                                return Node.NodeResult.Success;
+                           
                                             })
                                             .Stop(() => Console.WriteLine("Stop Eat banana"))
                                             .End();
@@ -58,10 +57,8 @@ namespace BT
             while (true)
             {
                 tree.Execute();
-                Thread.Sleep(1000);
+                Thread.Sleep(100);
             }
-
-            Console.WriteLine("Hello World!");
         }
     }
 }

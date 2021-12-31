@@ -2,16 +2,15 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BT.Composite
+namespace Task.Switch.Structure.BT.Composites
 {
     public abstract class CompositeNode : Node
     {
-        protected List<Node> Children = new List<Node>();
+        protected readonly List<Node> m_Children = new List<Node>();
 
         public void AddChild(Node child)
         {
-            Children.Add(child);
+            m_Children.Add(child);
         }
     }
-
 }
