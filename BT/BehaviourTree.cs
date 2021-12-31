@@ -43,21 +43,21 @@ namespace Task.Switch.Structure.BT
             m_Pointer = AddNodeToTree(new ParallelNode());
             return this;
         }
-        public GenericNode Do()
+        public Node Do()
         {
-            return AddNodeToTree(new GenericNode()) as GenericNode;
+            return AddNodeToTree(new GenericNode());
         }
-        public WaitNode Wait(int ms,Node.NodeResult waitResult = Node.NodeResult.Success)
+        public Node Wait(int ms,Node.NodeResult waitResult = Node.NodeResult.Success)
         {
-            return AddNodeToTree(new WaitNode(ms, waitResult)) as WaitNode;
+            return AddNodeToTree(new WaitNode(ms, waitResult));
         }
-        public WaitFrameNode WaitFrame(int frameCount,Node.NodeResult waitResult = Node.NodeResult.Success)
+        public Node WaitFrame(int frameCount,Node.NodeResult waitResult = Node.NodeResult.Success)
         {
-            return AddNodeToTree(new WaitFrameNode(frameCount, waitResult)) as WaitFrameNode;
+            return AddNodeToTree(new WaitFrameNode(frameCount, waitResult));
         }
-        public WaitUntilNode WaitUntil(Func<bool> waitFunc,Node.NodeResult nodeResult = Node.NodeResult.Success)
+        public Node WaitUntil(Func<bool> waitFunc,Node.NodeResult nodeResult = Node.NodeResult.Success)
         {   
-            return AddNodeToTree(new WaitUntilNode(waitFunc, nodeResult)) as WaitUntilNode;
+            return AddNodeToTree(new WaitUntilNode(waitFunc, nodeResult));
         }
 
         Node AddNodeToTree(Node target)
@@ -80,6 +80,5 @@ namespace Task.Switch.Structure.BT
             target.Tree = this;
             return target;
         }
-
     }
 }

@@ -19,7 +19,8 @@
 
         protected override NodeResult GetResult()
         {
-            if (m_FrameCount++ >= m_WaitFrameCount)
+            m_FrameCount++;
+            if (m_FrameCount >= m_WaitFrameCount)
                 return m_WaitResult;
             return NodeResult.Continue;
         }
