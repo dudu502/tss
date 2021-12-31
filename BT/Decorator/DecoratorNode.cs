@@ -4,8 +4,12 @@ using System.Text;
 
 namespace BT.Decorator
 {
-    public abstract class DecoratorNode:Node
+    public abstract class DecoratorNode : Node
     {
-        public Node Child;
+        protected Node Child;
+        public void SetChild(Node node)
+        {
+            Child = node;
+        }
     }
 }

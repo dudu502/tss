@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BT.Action
+namespace BT.Actions
 {
     public class DebugNode : ActionNode
     {

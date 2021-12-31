@@ -6,8 +6,12 @@ namespace BT.Composite
 {
     public abstract class CompositeNode : Node
     {
-        public List<Node> Children = new List<Node>();
+        protected List<Node> Children = new List<Node>();
 
+        public void AddChild(Node child)
+        {
+            Children.Add(child);
+        }
     }
 
 }

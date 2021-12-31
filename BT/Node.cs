@@ -6,6 +6,7 @@ using System.Text;
 
 namespace BT
 {
+
     public abstract class Node
     {
         public enum NodeResult
@@ -16,6 +17,7 @@ namespace BT
         }
         public NodeResult Result { private set; get; } = NodeResult.Continue;
         private bool m_Started = false;
+        public BehaviourTree Tree;
         public NodeResult Execute()
         {
             if (!m_Started)
@@ -39,8 +41,12 @@ namespace BT
 
     public class RootNode : Node
     {
-        public Node Child;
+        protected Node Child;
 
+        public void SetChild(Node node)
+        {
+            Child = node;
+        }
         protected override void OnStart()
         {
             

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BT.Action
+namespace BT.Actions
 {
     public abstract class ActionNode : Node
     {
@@ -13,5 +13,10 @@ namespace BT.Action
         public ActionNode Start(System.Action start) { m_Start = start; return this; }
         public ActionNode Stop(System.Action stop) { m_Stop = stop; return this; }
         public ActionNode Update(System.Func<NodeResult> update) { m_Update = update; return this; }
+
+        public BehaviourTree End()
+        {
+            return Tree;
+        }
     }
 }

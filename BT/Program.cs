@@ -1,4 +1,4 @@
-﻿using BT.Action;
+﻿using BT.Actions;
 using BT.Composite;
 using BT.Decorator;
 using System;
@@ -13,29 +13,54 @@ namespace BT
         {
             BehaviourTree tree = new BehaviourTree();
 
-            RepeatNode repeatNode = new RepeatNode();
-
-            SequencerNode sequencerNode = new SequencerNode();
-            tree.SetChild(repeatNode);
-            repeatNode.Child = sequencerNode;
-            DebugNode hungry = new DebugNode() { message = "Hungry?" };
-            sequencerNode.Children.Add(hungry);
-
-            DebugNode yesHungry = new DebugNode() { message = "yes , very hungry" }; 
-            sequencerNode.Children.Add(yesHungry);
-
-            SelectorNode select = new SelectorNode();
-            
-            select.Children.Add(new DebugNode() { message = "eat apple" });
-            select.Children.Add(new DebugNode() { message = "eat banana"});
-
-            sequencerNode.Children.Add(select);
+            tree.Repeat()
+                        .Sequence()
+                                    .Do()
+                                        .Start(() => Console.WriteLine("Start Hungry?"))
+                                        .Update(() =>
+                                            {
+                                                Console.WriteLine("Update Hungry?");
+                                                return Node.NodeResult.Success;
+                                            })
+                                        .Stop(() => Console.WriteLine("Stop Hungry?"))
+                                        .End()
+                                    .Do()
+                                        .Start(() => Console.WriteLine("Yes,Start Very Hungry"))
+                                        .Update(() =>
+                                        {
+                                            Console.WriteLine("Yes,Update Very Hungry");
+                                            return Node.NodeResult.Success;
+                                        })
+                                        .Stop(() => Console.WriteLine("Yes,Stop Very Hungry"))
+                                        .End()
+                                    .Select()
+                                        .Wait(2000,Node.NodeResult.Failure)
+                                            .End()
+                                        .Do()
+                                            .Start(() => Console.WriteLine("Start Eat apple"))
+                                            .Update(() =>
+                                            {
+                                                Console.WriteLine("Update Eat apple");
+                                                return Node.NodeResult.Success;
+                                            })
+                                            .Stop(() => Console.WriteLine("Stop Eat apple"))
+                                            .End()
+                                        .Do()
+                                            .Start(() => Console.WriteLine("Start Eat banana"))
+                                            .Update(() =>
+                                            {
+                                                Console.WriteLine("Update Eat banana");
+                                                return Node.NodeResult.Success;
+                                            })
+                                            .Stop(() => Console.WriteLine("Stop Eat banana"))
+                                            .End();
 
             while (true)
             {
                 tree.Execute();
                 Thread.Sleep(1000);
             }
+
             Console.WriteLine("Hello World!");
         }
     }
