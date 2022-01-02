@@ -6,13 +6,12 @@ namespace Task.Switch.Structure.FSM
 {
     public class StateMachine<T> where T:Enum
     {
-        private List<State<T>> m_States;
-        private State<T> m_CurrentActiveState;
+        private readonly List<State<T>> m_States = new List<State<T>>();
+        private State<T> m_CurrentActiveState = null;
         private bool m_Running = false;
         public StateMachine()
         {
-            m_CurrentActiveState = null;
-            m_States = new List<State<T>>();
+            
         }
         public void Start(T startStateName)
         {
@@ -26,8 +25,7 @@ namespace Task.Switch.Structure.FSM
         }
         public State<T> NewState(T stateName)
         {
-            State<T> state = new State<T>();
-            state.Name = stateName;
+            State<T> state = new State<T>(stateName);
             m_States.Add(state);
             return state;
         }

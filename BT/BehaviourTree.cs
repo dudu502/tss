@@ -15,7 +15,13 @@ namespace Task.Switch.Structure.BT
         {
             m_Pointer = m_Root;
         }
-
+        public void Reset()
+        {
+            if (m_Root != null)
+            {
+                m_Root.Reset();
+            }
+        }
         public Node.NodeResult Execute()
         {
             if (m_Root.Result == Node.NodeResult.Continue)

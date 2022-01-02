@@ -40,6 +40,10 @@ namespace Task.Switch.Structure.BT
             }
             return Result;
         }
+        public virtual void Reset()
+        {
+            Result = NodeResult.Continue;
+        }
         public BehaviourTree End()
         {
             return Tree;
@@ -62,7 +66,6 @@ namespace Task.Switch.Structure.BT
     public class RootNode : Node
     {
         private Node m_Child;
-
         public void SetChild(Node node)
         {
             m_Child = node;
@@ -71,6 +74,12 @@ namespace Task.Switch.Structure.BT
         protected override NodeResult GetResult()
         {
             return m_Child.Execute();
+        }
+        public override void Reset()
+        {
+            base.Reset();
+            if (m_Child != null)
+                m_Child.Reset();
         }
     }
 }

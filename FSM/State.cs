@@ -11,11 +11,11 @@ namespace Task.Switch.Structure.FSM
         private Action m_OnEnter;
         private Action m_OnUpdate;
         private Action m_OnExit;
-        public T Name { set; get; }
+        public readonly T Name;
 
-        public State()
+        public State(T name)
         {
-            
+            Name = name;
         }
 
 

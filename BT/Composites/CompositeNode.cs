@@ -12,5 +12,11 @@ namespace Task.Switch.Structure.BT.Composites
         {
             m_Children.Add(child);
         }
+        public override void Reset()
+        {
+            base.Reset();
+            foreach (Node node in m_Children)
+                node.Reset();
+        }
     }
 }

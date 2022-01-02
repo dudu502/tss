@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Task.Switch.Structure.FSM
 {
     public class Translation<T>where T:Enum
     {
-        public string Name { set; get; }
         private readonly Func<bool> m_Valid;
         private Action m_Transfer;
         public T ToStateName { private set; get; }
