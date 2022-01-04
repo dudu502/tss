@@ -19,30 +19,38 @@ namespace Task.Switch.Structure.BT
                                         .Stop(() => Console.WriteLine("Stop Hungry?"))
                                         .End()
                                     .Do()
-                                        .Start(() => Console.WriteLine("Yes,Start Very Hungry"))
-                                        .Update(() => Console.WriteLine("Yes,Update Very Hungry"))
-                                        .Stop(() => Console.WriteLine("Yes,Stop Very Hungry"))
+                                        .Start(() => Console.WriteLine("Yes, Start Very Hungry"))
+                                        .Update(() => Console.WriteLine("Yes, Update Very Hungry"))
+                                        .Stop(() => Console.WriteLine("Yes, Stop Very Hungry"))
                                         .End()
                                     .Select()
                                         .WaitFrame(3, Node.NodeResult.Failure)
-                                            .Update(()=>Console.WriteLine("Think ............."))
+                                            .Update(() => Console.WriteLine("Think ............."))
                                             .End()
                                         .Do()
-                                            .Start(() => Console.WriteLine("Start Eat apple"))
-                                            .Update(() => Console.WriteLine("Update Eat apple"))
+                                            .Start(() => Console.WriteLine("Start Eat Apple"))
+                                            .Update(() => Console.WriteLine("Update Eat Apple"))
                                             .GetResult(() => Node.NodeResult.Failure)
-                                            .Stop(() => Console.WriteLine("Stop Eat apple"))
+                                            .Stop(() => Console.WriteLine("Stop Eat Apple"))
                                             .End()
                                         .Do()
-                                            .Start(() => Console.WriteLine("Start Eat banana"))
-                                            .Update(() => Console.WriteLine("Update Eat banana"))
-                                            .Stop(() => Console.WriteLine("Stop Eat banana"))
-                                            .End();
-
+                                            .Start(() => Console.WriteLine("Start Eat Banana"))
+                                            .Update(() => Console.WriteLine("Update Eat Banana"))
+                                            .GetResult(() => Node.NodeResult.Success)
+                                            .Stop(() => Console.WriteLine("Stop Eat Banana"))
+                                            .End()
+                                        .End()
+                                    .Do()
+                                        .Start(() => Console.WriteLine("Finish Start Eat "))
+                                        .Update(() => Console.WriteLine("Finish Update End"))
+                                        .Stop(()=>Console.WriteLine("Finish Stop End"))
+                                        .End();
+                            
+            
             while (true)
             {
                 tree.Execute();
-                Thread.Sleep(100);
+                Thread.Sleep(500);
             }
         }
     }

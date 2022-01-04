@@ -46,7 +46,7 @@ namespace Task.Switch.Structure.BT
         }
         public BehaviourTree End()
         {
-            return Tree;
+            return Tree.End();         
         }
         protected virtual void OnStart() 
         {
