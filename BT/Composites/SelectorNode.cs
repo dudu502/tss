@@ -8,7 +8,11 @@
             base.OnStart();
             m_CurrentIndex = 0;
         }
-
+        public override void Reset()
+        {
+            base.Reset();
+            m_CurrentIndex = 0;
+        }
         protected override NodeResult GetResult()
         {
             var child = m_Children[m_CurrentIndex];

@@ -18,6 +18,12 @@ namespace Task.Switch.Structure.BT.Actions
             m_StartDateTime = DateTime.Now;
         }
 
+        public override void Reset()
+        {
+            base.Reset();
+            m_StartDateTime = DateTime.Now;
+        }
+
         protected override NodeResult GetResult()
         {
             if (DateTime.Now - m_StartDateTime > m_WaitTimeSpan)

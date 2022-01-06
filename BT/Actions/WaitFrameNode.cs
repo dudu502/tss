@@ -15,7 +15,11 @@
             base.OnStart();
             m_FrameCount = 0;
         }
-
+        public override void Reset()
+        {
+            base.Reset();
+            m_FrameCount=0;
+        }
 
         protected override NodeResult GetResult()
         {

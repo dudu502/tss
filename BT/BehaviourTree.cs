@@ -16,6 +16,7 @@ namespace Task.Switch.Structure.BT
         {
             m_PointerStack.Push(m_Root);
         }
+  
         public void Reset()
         {
             if (m_Root != null)
@@ -33,6 +34,11 @@ namespace Task.Switch.Structure.BT
         public BehaviourTree Repeat()
         {
             PushNodeToTree(new RepeatNode());
+            return this;
+        }
+        public BehaviourTree RepeatUntil(Func<bool> repeatUntil,Node.NodeResult repeatResult = Node.NodeResult.Success)
+        {
+            PushNodeToTree(new RepeatUntilNode(repeatUntil, repeatResult));
             return this;
         }
         public BehaviourTree Sequence()
