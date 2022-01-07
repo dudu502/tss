@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Task.Switch.Structure.FSM
 {
@@ -9,15 +8,19 @@ namespace Task.Switch.Structure.FSM
         private readonly List<State<T>> m_States = new List<State<T>>();
         private State<T> m_CurrentActiveState = null;
         private bool m_Running = false;
+        private bool m_Inited = false;
         public StateMachine()
         {
             
         }
         public void Start(T startStateName)
         {
-            m_Running = true;
-            m_CurrentActiveState = Find(startStateName);
-            m_CurrentActiveState.OnEnter();
+            if (m_Inited)
+            {
+                m_Running = true;
+                m_CurrentActiveState = Find(startStateName);
+                m_CurrentActiveState.OnEnter();
+            }
         }
         public void Stop()
         {
@@ -25,14 +28,16 @@ namespace Task.Switch.Structure.FSM
         }
         public State<T> NewState(T stateName)
         {
-            State<T> state = new State<T>(stateName);
+            State<T> state = new State<T>(stateName,this);
             m_States.Add(state);
             return state;
         }
-        public void Initialize()
+        public StateMachine<T> Initialize()
         {
             foreach (State<T> state in m_States)
                 state.OnInitialize();
+            m_Inited = true;
+            return this;
         }
         private State<T> Find(T stateName)
         {

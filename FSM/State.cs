@@ -12,13 +12,17 @@ namespace Task.Switch.Structure.FSM
         private Action m_OnUpdate;
         private Action m_OnExit;
         public readonly T Name;
-
-        public State(T name)
+        private readonly StateMachine<T> m_Machine;
+        public State(T name,StateMachine<T> stateMachine)
         {
             Name = name;
+            m_Machine = stateMachine;
         }
 
-
+        public StateMachine<T> End()
+        {
+            return m_Machine;
+        }
         public Translation<T> Translate(Func<bool> valid)
         {
             Translation<T> translation = new Translation<T>(this,valid);
