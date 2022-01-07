@@ -1,30 +1,30 @@
 ﻿namespace Task.Switch.Structure.BT.Actions
 {
-    public class WaitFrameNode : ActionNode
+    public class WaitTickNode : ActionNode
     {
-        readonly int m_WaitFrameCount;
-        int m_FrameCount = 0;
+        readonly int m_WaitTurnCount;
+        int m_TickCount = 0;
         readonly NodeResult m_WaitResult;
-        public WaitFrameNode(int frameCount, NodeResult waitResult)
+        public WaitTickNode(int turnCount, NodeResult waitResult)
         {
-            m_WaitFrameCount = frameCount;
+            m_WaitTurnCount = turnCount;
             m_WaitResult = waitResult;
         }
         protected override void OnStart()
         {
             base.OnStart();
-            m_FrameCount = 0;
+            m_TickCount = 0;
         }
         public override void Reset()
         {
             base.Reset();
-            m_FrameCount=0;
+            m_TickCount=0;
         }
 
         protected override NodeResult GetResult()
         {
-            m_FrameCount++;
-            if (m_FrameCount >= m_WaitFrameCount)
+            m_TickCount++;
+            if (m_TickCount >= m_WaitTurnCount)
                 return m_WaitResult;
             return NodeResult.Continue;
         }

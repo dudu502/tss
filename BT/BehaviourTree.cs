@@ -26,6 +26,11 @@ namespace Task.Switch.Structure.BT
                 PushNodeToTree(new RepeatNode());
                 return this;
             }
+            public TreeBuilder Invert()
+            {
+                PushNodeToTree(new InverterNode());
+                return this;
+            }
             public TreeBuilder RepeatUntil(Func<bool> repeatUntil, Node.NodeResult repeatResult = Node.NodeResult.Success)
             {
                 PushNodeToTree(new RepeatUntilNode(repeatUntil, repeatResult));
@@ -52,15 +57,15 @@ namespace Task.Switch.Structure.BT
                 PushNodeToTree(genericNode);
                 return genericNode;
             }
-            public Node Wait(int ms, Node.NodeResult waitResult = Node.NodeResult.Success)
+            public Node WaitTime(int ms, Node.NodeResult waitResult = Node.NodeResult.Success)
             {
-                WaitNode waitNode = new WaitNode(ms, waitResult);
+                WaitTimeNode waitNode = new WaitTimeNode(ms, waitResult);
                 PushNodeToTree(waitNode);
                 return waitNode;
             }
-            public Node WaitFrame(int frameCount, Node.NodeResult waitResult = Node.NodeResult.Success)
+            public Node WaitTick(int frameCount, Node.NodeResult waitResult = Node.NodeResult.Success)
             {
-                WaitFrameNode waitFrameNode = new WaitFrameNode(frameCount, waitResult);
+                WaitTickNode waitFrameNode = new WaitTickNode(frameCount, waitResult);
                 PushNodeToTree(waitFrameNode);
                 return waitFrameNode;
             }

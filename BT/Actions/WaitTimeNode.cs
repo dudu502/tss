@@ -2,12 +2,12 @@
 
 namespace Task.Switch.Structure.BT.Actions
 {
-    public class WaitNode : ActionNode
+    public class WaitTimeNode : ActionNode
     {
         readonly TimeSpan m_WaitTimeSpan;
         DateTime m_StartDateTime;
         readonly NodeResult m_WaitResult;
-        public WaitNode(int ms, NodeResult waitResult)
+        public WaitTimeNode(int ms, NodeResult waitResult)
         {
             m_WaitTimeSpan = new TimeSpan(ms * 10000);
             m_WaitResult = waitResult;

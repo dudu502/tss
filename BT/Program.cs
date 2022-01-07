@@ -24,7 +24,7 @@ namespace Task.Switch.Structure.BT
                                         .Stop(() => Console.WriteLine("Yes, Stop Very Hungry"))
                                         .End()
                                     .Select()
-                                        .WaitFrame(3, Node.NodeResult.Failure)
+                                        .WaitTick(3, Node.NodeResult.Failure)
                                             .Update(() => Console.WriteLine("Think ............."))
                                             .End()
                                         .Do()

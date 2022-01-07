@@ -16,7 +16,7 @@ namespace Task.Switch.Structure.BT.Actions
 
         protected override NodeResult GetResult()
         {
-            if (m_WaitUntilFunc())
+            if (m_WaitUntilFunc!=null&& m_WaitUntilFunc.Invoke())
                 return m_WaitResult;
             return NodeResult.Continue;
         }
