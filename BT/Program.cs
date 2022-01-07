@@ -11,7 +11,7 @@ namespace Task.Switch.Structure.BT
         {
             BehaviourTree tree = new BehaviourTree();
 
-            tree.Repeat()
+            tree.Builder.Repeat()
                          .Sequence()
                                     .Do()
                                         .Start(() => Console.WriteLine("Start Hungry?"))
@@ -43,10 +43,9 @@ namespace Task.Switch.Structure.BT
                                     .Do()
                                         .Start(() => Console.WriteLine("Finish Start Eat "))
                                         .Update(() => Console.WriteLine("Finish Update End"))
-                                        .Stop(()=>Console.WriteLine("Finish Stop End"))
+                                        .Stop(() => Console.WriteLine("Finish Stop End"))
                                         .End();
-                            
-            
+
             while (true)
             {
                 tree.Execute();

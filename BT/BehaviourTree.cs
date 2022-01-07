@@ -9,12 +9,103 @@ namespace Task.Switch.Structure.BT
 {
     public class BehaviourTree
     {
+        #region Builder
+        public class TreeBuilder
+        {
+            private readonly Stack<Node> m_PointerStack = new Stack<Node>();
+            private readonly BehaviourTree m_Tree;
+            private readonly RootNode m_Root;
+            public TreeBuilder(BehaviourTree tree, RootNode root)
+            {
+                m_Tree = tree;
+                m_Root = root;
+                PushNodeToTree(m_Root);
+            }
+            public TreeBuilder Repeat()
+            {
+                PushNodeToTree(new RepeatNode());
+                return this;
+            }
+            public TreeBuilder RepeatUntil(Func<bool> repeatUntil, Node.NodeResult repeatResult = Node.NodeResult.Success)
+            {
+                PushNodeToTree(new RepeatUntilNode(repeatUntil, repeatResult));
+                return this;
+            }
+            public TreeBuilder Sequence()
+            {
+                PushNodeToTree(new SequencerNode());
+                return this;
+            }
+            public TreeBuilder Select()
+            {
+                PushNodeToTree(new SelectorNode());
+                return this;
+            }
+            public TreeBuilder Parallel()
+            {
+                PushNodeToTree(new ParallelNode());
+                return this;
+            }
+            public Node Do()
+            {
+                GenericNode genericNode = new GenericNode();
+                PushNodeToTree(genericNode);
+                return genericNode;
+            }
+            public Node Wait(int ms, Node.NodeResult waitResult = Node.NodeResult.Success)
+            {
+                WaitNode waitNode = new WaitNode(ms, waitResult);
+                PushNodeToTree(waitNode);
+                return waitNode;
+            }
+            public Node WaitFrame(int frameCount, Node.NodeResult waitResult = Node.NodeResult.Success)
+            {
+                WaitFrameNode waitFrameNode = new WaitFrameNode(frameCount, waitResult);
+                PushNodeToTree(waitFrameNode);
+                return waitFrameNode;
+            }
+            public Node WaitUntil(Func<bool> waitFunc, Node.NodeResult nodeResult = Node.NodeResult.Success)
+            {
+                WaitUntilNode waitUntilNode = new WaitUntilNode(waitFunc, nodeResult);
+                PushNodeToTree(waitUntilNode);
+                return waitUntilNode;
+            }
+            public TreeBuilder End()
+            {
+                if (m_PointerStack.Count > 0)
+                    m_PointerStack.Pop();
+                return this;
+            }
+            void PushNodeToTree(Node child)
+            {
+                child.Tree = m_Tree;
+                if(m_PointerStack.TryPeek(out Node parent))
+                {
+                    switch (parent)
+                    {
+                        case ActionNode:
+                            return;
+                        case RootNode:
+                            ((RootNode)parent).SetChild(child);
+                            break;
+                        case DecoratorNode:
+                            ((DecoratorNode)parent).SetChild(child);
+                            break;
+                        case CompositeNode:
+                            ((CompositeNode)parent).AddChild(child);
+                            break;
+                    }
+                }
+                m_PointerStack.Push(child);
+            }
+        }
+        #endregion
         private readonly RootNode m_Root = new RootNode();
-        private readonly Stack<Node> m_PointerStack = new Stack<Node>();
         private Node.NodeResult m_TreeState = Node.NodeResult.Continue;
+        public readonly TreeBuilder Builder;
         public BehaviourTree()
         {
-            m_PointerStack.Push(m_Root);
+            Builder = new TreeBuilder(this, m_Root);
         }
   
         public void Reset()
@@ -29,82 +120,6 @@ namespace Task.Switch.Structure.BT
             if (m_Root.Result == Node.NodeResult.Continue)
                 m_TreeState = m_Root.Execute();
             return m_TreeState;
-        }
-
-        public BehaviourTree Repeat()
-        {
-            PushNodeToTree(new RepeatNode());
-            return this;
-        }
-        public BehaviourTree RepeatUntil(Func<bool> repeatUntil,Node.NodeResult repeatResult = Node.NodeResult.Success)
-        {
-            PushNodeToTree(new RepeatUntilNode(repeatUntil, repeatResult));
-            return this;
-        }
-        public BehaviourTree Sequence()
-        {
-            PushNodeToTree(new SequencerNode());
-            return this;
-        }
-        public BehaviourTree Select()
-        {
-            PushNodeToTree(new SelectorNode());
-            return this;
-        }
-        public BehaviourTree Parallel()
-        {
-            PushNodeToTree(new ParallelNode());
-            return this;
-        }
-        public Node Do()
-        {
-            GenericNode genericNode = new GenericNode();
-            PushNodeToTree(genericNode);
-            return genericNode;
-        }
-        public Node Wait(int ms,Node.NodeResult waitResult = Node.NodeResult.Success)
-        {
-            WaitNode waitNode = new WaitNode(ms, waitResult);
-            PushNodeToTree(waitNode);
-            return waitNode;
-        }
-        public Node WaitFrame(int frameCount,Node.NodeResult waitResult = Node.NodeResult.Success)
-        {
-            WaitFrameNode waitFrameNode = new WaitFrameNode(frameCount, waitResult);
-            PushNodeToTree(waitFrameNode);
-            return waitFrameNode;
-        }
-        public Node WaitUntil(Func<bool> waitFunc,Node.NodeResult nodeResult = Node.NodeResult.Success)
-        {   
-            WaitUntilNode waitUntilNode = new WaitUntilNode(waitFunc,nodeResult);
-            PushNodeToTree(waitUntilNode);
-            return waitUntilNode;
-        }
-        public BehaviourTree End()
-        {
-            if(m_PointerStack.Count > 0)
-                m_PointerStack.Pop();
-            return this;
-        }
-        void PushNodeToTree(Node child)
-        {
-            child.Tree = this;
-            Node parent = m_PointerStack.Peek();
-            switch (parent)
-            {
-                case ActionNode:
-                    return;
-                case RootNode:
-                    ((RootNode)parent).SetChild(child);
-                    break;
-                case DecoratorNode:
-                    ((DecoratorNode)parent).SetChild(child);
-                    break;
-                case CompositeNode:
-                    ((CompositeNode)parent).AddChild(child);
-                    break;
-            }
-            m_PointerStack.Push(child);
-        }
+        }     
     }
 }

@@ -12,6 +12,7 @@ namespace Task.Switch.Structure.BT.Actions
             m_WaitTimeSpan = new TimeSpan(ms * 10000);
             m_WaitResult = waitResult;
         }
+
         protected override void OnStart()
         {
             base.OnStart();

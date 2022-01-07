@@ -14,7 +14,6 @@ namespace Task.Switch.Structure.BT.Actions
             m_WaitResult = waitResult;
         }
 
-
         protected override NodeResult GetResult()
         {
             if (m_WaitUntilFunc())

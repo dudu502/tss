@@ -15,7 +15,8 @@
         }
         protected override NodeResult GetResult()
         {
-            var child = m_Children[m_CurrentIndex];
+            if(m_Children.Count == 0)return NodeResult.Success;
+            Node child = m_Children[m_CurrentIndex];
             switch (child.Execute())
             {
                 case NodeResult.Continue:

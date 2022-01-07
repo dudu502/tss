@@ -44,9 +44,9 @@ namespace Task.Switch.Structure.BT
         {
             Result = NodeResult.Continue;
         }
-        public BehaviourTree End()
+        public BehaviourTree.TreeBuilder End()
         {
-            return Tree.End();         
+            return Tree.Builder.End();         
         }
         protected virtual void OnStart() 
         {
@@ -63,7 +63,7 @@ namespace Task.Switch.Structure.BT
         }    
     }   
 
-    public class RootNode : Node
+    public sealed class RootNode : Node
     {
         private Node m_Child;
         public void SetChild(Node node)
@@ -73,7 +73,9 @@ namespace Task.Switch.Structure.BT
 
         protected override NodeResult GetResult()
         {
-            return m_Child.Execute();
+            if(m_Child != null)
+                return m_Child.Execute();
+            return NodeResult.Success;
         }
         public override void Reset()
         {
