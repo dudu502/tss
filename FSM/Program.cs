@@ -33,7 +33,7 @@ namespace Task.Switch.Structure.FSM
                     .Exit(() => Console.WriteLine("退出 空闲"))
                     .Translate(() => timer >= maxTimerCount).Transfer(() => Console.WriteLine("转化中 ...")).To(State.Patrol)
                 .End()
-                    .NewState(State.Patrol)
+                .NewState(State.Patrol)
                     .Initialize(() => Console.WriteLine("初始化 巡逻"))
                     .Enter(() =>
                     {
@@ -44,7 +44,8 @@ namespace Task.Switch.Structure.FSM
                     .Exit(() => Console.WriteLine("退出 巡逻"))
                     .Translate(() => timer1 > maxTimer1Count).To(State.Escape)
                     .Translate(() => timer >= maxTimerCount).Transfer(() => Console.WriteLine("转化中 ...")).To(State.Idle)
-                .End().NewState(State.Escape)
+                .End()
+                .NewState(State.Escape)
                     .Initialize(() => Console.WriteLine("初始化 逃跑"))
                     .Enter(() =>
                     {

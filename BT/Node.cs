@@ -5,7 +5,7 @@ namespace Task.Switch.Structure.BT
 {
     public abstract class Node
     {
-        public enum NodeResult
+        public enum NodeResult:byte
         {
             Continue = 1,
             Failure = 2,

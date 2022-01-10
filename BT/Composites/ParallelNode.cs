@@ -10,7 +10,7 @@ namespace Task.Switch.Structure.BT.Composites
                 state |= child.Execute();
             if ((state & NodeResult.Failure) == NodeResult.Failure)
                 return NodeResult.Failure;
-            else if ((state & NodeResult.Continue) == NodeResult.Continue)
+            if ((state & NodeResult.Continue) == NodeResult.Continue)
                 return NodeResult.Continue;
             return NodeResult.Success;
         }

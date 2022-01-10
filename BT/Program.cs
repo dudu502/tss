@@ -12,7 +12,7 @@ namespace Task.Switch.Structure.BT
             BehaviourTree tree = new BehaviourTree();
 
             tree.Builder.Repeat()
-                         .Sequence()
+                            .Sequence()
                                     .Do()
                                         .Start(() => Console.WriteLine("Start Hungry?"))
                                         .Update(() => Console.WriteLine("Update Hungry?"))
