@@ -26,6 +26,16 @@ namespace Task.Switch.Structure.BT
                 PushNodeToTree(new RepeatNode());
                 return this;
             }
+            public TreeBuilder Success()
+            {
+                PushNodeToTree(new ReturnFailureNode());
+                return this;
+            }
+            public TreeBuilder Failure()
+            {
+                PushNodeToTree(new ReturnFailureNode());
+                return this;
+            }
             public TreeBuilder Invert()
             {
                 PushNodeToTree(new InverterNode());
