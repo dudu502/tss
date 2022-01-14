@@ -41,9 +41,9 @@ namespace Task.Switch.Structure.BT
                 PushNodeToTree(new InverterNode());
                 return this;
             }
-            public TreeBuilder RepeatUntil(Func<bool> repeatUntil, Node.NodeResult repeatResult = Node.NodeResult.Success)
+            public TreeBuilder RepeatUntil(Func<bool> repeatUntil)
             {
-                PushNodeToTree(new RepeatUntilNode(repeatUntil, repeatResult));
+                PushNodeToTree(new RepeatUntilNode(repeatUntil));
                 return this;
             }
             public TreeBuilder Sequence()
@@ -61,27 +61,37 @@ namespace Task.Switch.Structure.BT
                 PushNodeToTree(new ParallelNode());
                 return this;
             }
+            public TreeBuilder ParallelSelect()
+            {
+                PushNodeToTree(new ParallelSelectNode());
+                return this;
+            }
+            public TreeBuilder ParallelSequence()
+            {
+                PushNodeToTree(new ParallelSequencerNode());
+                return this;
+            }
             public Node Do()
             {
                 GenericNode genericNode = new GenericNode();
                 PushNodeToTree(genericNode);
                 return genericNode;
             }
-            public Node WaitTime(int ms, Node.NodeResult waitResult = Node.NodeResult.Success)
+            public Node WaitTime(int ms)
             {
-                WaitTimeNode waitNode = new WaitTimeNode(ms, waitResult);
+                WaitTimeNode waitNode = new WaitTimeNode(ms);
                 PushNodeToTree(waitNode);
                 return waitNode;
             }
-            public Node WaitTick(int frameCount, Node.NodeResult waitResult = Node.NodeResult.Success)
+            public Node WaitTurn(int frameCount)
             {
-                WaitTickNode waitFrameNode = new WaitTickNode(frameCount, waitResult);
+                WaitTurnNode waitFrameNode = new WaitTurnNode(frameCount);
                 PushNodeToTree(waitFrameNode);
                 return waitFrameNode;
             }
-            public Node WaitUntil(Func<bool> waitFunc, Node.NodeResult nodeResult = Node.NodeResult.Success)
+            public Node WaitUntil(Func<bool> waitFunc)
             {
-                WaitUntilNode waitUntilNode = new WaitUntilNode(waitFunc, nodeResult);
+                WaitUntilNode waitUntilNode = new WaitUntilNode(waitFunc);
                 PushNodeToTree(waitUntilNode);
                 return waitUntilNode;
             }
@@ -115,9 +125,10 @@ namespace Task.Switch.Structure.BT
             }
         }
         #endregion
+
+        public readonly TreeBuilder Builder;
         private readonly RootNode m_Root = new RootNode();
         private Node.NodeResult m_TreeState = Node.NodeResult.Continue;
-        public readonly TreeBuilder Builder;
         public BehaviourTree()
         {
             Builder = new TreeBuilder(this, m_Root);
@@ -130,11 +141,12 @@ namespace Task.Switch.Structure.BT
                 m_Root.Reset();
             }
         }
+
         public Node.NodeResult Execute()
         {
             if (m_Root.Result == Node.NodeResult.Continue)
                 m_TreeState = m_Root.Execute();
             return m_TreeState;
-        }     
+        }
     }
 }

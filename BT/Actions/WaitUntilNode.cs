@@ -1,23 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Task.Switch.Structure.BT.Actions
 {
     public class WaitUntilNode : ActionNode
     {
         private readonly Func<bool> m_WaitUntilFunc;
-        private readonly NodeResult m_WaitResult;
-        public WaitUntilNode(Func<bool> waitUntil, NodeResult waitResult)
+        public WaitUntilNode(Func<bool> waitUntil)
         {
             m_WaitUntilFunc = waitUntil;
-            m_WaitResult = waitResult;
         }
 
         protected override NodeResult GetResult()
         {
-            if (m_WaitUntilFunc!=null&& m_WaitUntilFunc.Invoke())
-                return m_WaitResult;
+            if (m_WaitUntilFunc != null && m_WaitUntilFunc.Invoke())
+            {
+                if (m_NodeResult != null)
+                    return m_NodeResult.Invoke();
+                return NodeResult.Success;
+            }
             return NodeResult.Continue;
         }
     }

@@ -6,11 +6,10 @@ namespace Task.Switch.Structure.BT.Actions
     {
         readonly TimeSpan m_WaitTimeSpan;
         DateTime m_StartDateTime;
-        readonly NodeResult m_WaitResult;
-        public WaitTimeNode(int ms, NodeResult waitResult)
+
+        public WaitTimeNode(int ms)
         {
             m_WaitTimeSpan = new TimeSpan(ms * 10000);
-            m_WaitResult = waitResult;
         }
 
         protected override void OnStart()
@@ -28,7 +27,11 @@ namespace Task.Switch.Structure.BT.Actions
         protected override NodeResult GetResult()
         {
             if (DateTime.Now - m_StartDateTime > m_WaitTimeSpan)
-                return m_WaitResult;
+            {
+                if (m_NodeResult != null)
+                    return m_NodeResult.Invoke();
+                return NodeResult.Success;
+            }
             return NodeResult.Continue;
         }
     }

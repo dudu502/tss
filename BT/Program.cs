@@ -24,8 +24,11 @@ namespace Task.Switch.Structure.BT
                                         .Stop(() => Console.WriteLine("Yes, Stop Very Hungry"))
                                         .End()
                                     .Select()
-                                        .WaitTick(3, Node.NodeResult.Failure)
+                                        .WaitTurn(3)
+                                            .Start(()=>Console.WriteLine("Start Think"))
                                             .Update(() => Console.WriteLine("Think ............."))
+                                            .GetResult(()=>Node.NodeResult.Failure)
+                                            .Stop(()=>Console.WriteLine("Stop Think"))
                                             .End()
                                         .Do()
                                             .Start(() => Console.WriteLine("Start Eat Apple"))
@@ -45,6 +48,7 @@ namespace Task.Switch.Structure.BT
                                         .Update(() => Console.WriteLine("Finish Update End"))
                                         .Stop(() => Console.WriteLine("Finish Stop End"))
                                         .End();
+
 
             while (true)
             {

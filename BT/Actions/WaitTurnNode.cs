@@ -1,31 +1,34 @@
 ﻿namespace Task.Switch.Structure.BT.Actions
 {
-    public class WaitTickNode : ActionNode
+    public class WaitTurnNode : ActionNode
     {
         readonly int m_WaitTurnCount;
-        int m_TickCount = 0;
-        readonly NodeResult m_WaitResult;
-        public WaitTickNode(int turnCount, NodeResult waitResult)
+        int m_TurnCount = 0;
+
+        public WaitTurnNode(int turnCount)
         {
             m_WaitTurnCount = turnCount;
-            m_WaitResult = waitResult;
         }
         protected override void OnStart()
         {
             base.OnStart();
-            m_TickCount = 0;
+            m_TurnCount = 0;
         }
         public override void Reset()
         {
             base.Reset();
-            m_TickCount=0;
+            m_TurnCount=0;
         }
 
         protected override NodeResult GetResult()
         {
-            m_TickCount++;
-            if (m_TickCount >= m_WaitTurnCount)
-                return m_WaitResult;
+            m_TurnCount++;
+            if (m_TurnCount >= m_WaitTurnCount)
+            {
+                if (m_NodeResult != null)
+                    return m_NodeResult.Invoke();
+                return NodeResult.Success;
+            }
             return NodeResult.Continue;
         }
     }

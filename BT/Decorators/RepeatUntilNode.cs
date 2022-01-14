@@ -4,17 +4,20 @@ namespace Task.Switch.Structure.BT.Decorators
     public class RepeatUntilNode : RepeatNode
     {
         private readonly Func<bool> m_RepeatUntil;
-        private readonly NodeResult m_RepeatUntilResult;
-        public RepeatUntilNode(Func<bool> repeatUtil, NodeResult nodeResult)
+   
+        public RepeatUntilNode(Func<bool> repeatUtil)
         {
             m_RepeatUntil = repeatUtil;
-            m_RepeatUntilResult = nodeResult;
         }
         protected override NodeResult GetResult()
         {
             NodeResult result = base.GetResult();
             if (m_RepeatUntil != null && m_RepeatUntil.Invoke())
-                return m_RepeatUntilResult;
+            {
+                if (m_NodeResult != null)
+                    return m_NodeResult.Invoke();
+                return NodeResult.Success;
+            }
             return result;
         }
     }
