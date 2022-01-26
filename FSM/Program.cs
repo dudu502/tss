@@ -7,59 +7,70 @@ namespace Task.Switch.Structure.FSM
     {
         enum State
         {
-            Idle,
+            SayHi,
             Patrol,
+            Battle,
             Escape
         }
         static void Main(string[] args)
         {     
             // Create a state machine
             var machine = new StateMachine<State>();
-            int timer = 0;
-            const int maxTimerCount = 10;
-
-            int timer1 = 0;
-            const int maxTimer1Count = 20;
-            // add new state
+            const int r = 5;
+            bool sayHiComplete = false;
+            int hp = 10;
+            int orcHp = 20;
+            int distanceBetweenOrc = 10;
+            int distanceBetweenGoblin = 12;
             machine
-                .NewState(State.Idle)
-                    .Initialize(() => Console.WriteLine("初始化 空闲"))
-                    .Enter(() =>
-                    {
-                        timer = 0;
-                        Console.WriteLine("进入 空闲");
-                    })
-                    .Update(() => Console.WriteLine("空闲... " + timer++))
-                    .Exit(() => Console.WriteLine("退出 空闲"))
-                    .Translate(() => timer >= maxTimerCount).Transfer(() => Console.WriteLine("转化中 ...")).To(State.Patrol)
-                .End()
                 .NewState(State.Patrol)
-                    .Initialize(() => Console.WriteLine("初始化 巡逻"))
-                    .Enter(() =>
+                    .Initialize(() => Console.WriteLine("Init Patral State"))
+                    .Enter(() => Console.WriteLine("Enter Patral State"))
+                    .Update(() =>
                     {
-                        timer = 0;
-                        Console.WriteLine("进入 巡逻");
+                        distanceBetweenOrc--;
+                        distanceBetweenGoblin--;
+                        hp++;
+                        Console.WriteLine($"Patral ING.... distanceBetweenOrc:{distanceBetweenOrc} distanceBetweenGobin:{distanceBetweenGoblin} Hp:{hp} orcHp:{orcHp}");
                     })
-                    .Update(() => Console.WriteLine("巡逻... " + timer++ + " 危险系数" + timer1++))
-                    .Exit(() => Console.WriteLine("退出 巡逻"))
-                    .Translate(() => timer1 > maxTimer1Count).To(State.Escape)
-                    .Translate(() => timer >= maxTimerCount).Transfer(() => Console.WriteLine("转化中 ...")).To(State.Idle)
+                    .Translate(() => distanceBetweenOrc < r && orcHp>0).To(State.Battle)
+                    .Translate(() => distanceBetweenGoblin < r&&!sayHiComplete).To(State.SayHi)
+                .End()
+                .NewState(State.Battle)
+                    .Initialize(() => Console.WriteLine("Init Battle State"))
+                    .Enter(() => Console.WriteLine("Enter Battle State"))
+                    .Update(() =>
+                    {
+                        hp--;
+                        orcHp--;
+                        Console.WriteLine("Fight ING.... Current HP " + hp+" ocrHp "+orcHp);
+                    })
+                    .Translate(() => hp < 5).To(State.Escape)
+                    .Translate(()=> orcHp < 0).To(State.Patrol)
                 .End()
                 .NewState(State.Escape)
-                    .Initialize(() => Console.WriteLine("初始化 逃跑"))
-                    .Enter(() =>
+                    .Initialize(() => Console.WriteLine("Init Escape State"))
+                    .Enter(() => Console.WriteLine("Enter Escape State"))
+                    .Update(() =>
                     {
-                        timer = 0;
-                        Console.WriteLine("进入 逃跑");
+                        distanceBetweenOrc++;
+                        distanceBetweenGoblin++;
+                        Console.WriteLine($"Escape ING.... distanceBetweenOrc:{distanceBetweenOrc} distanceBetweenGobin:{distanceBetweenGoblin} Hp:{hp} orcHp:{orcHp}");
                     })
-                    .Update(() => Console.WriteLine("逃跑... " + timer1--))
-                    .Exit(() => Console.WriteLine("退出 逃跑"))
-                    .Translate(() => timer1 == 0).Transfer(() => Console.WriteLine("转化中 ...")).To(State.Idle)
+                    .Translate(() => distanceBetweenOrc > 5 * r).To(State.Patrol)
+                .End()
+                .NewState(State.SayHi)
+                    .Initialize(() => Console.WriteLine("Init SayHi State"))
+                    .Enter(() => Console.WriteLine("Enter SayHi State"))
+                    .Update(() =>
+                    {
+                        sayHiComplete = true;
+                        Console.WriteLine("Say Hi to Goblin");
+                    })
+                    .Translate(() => sayHiComplete).To(State.Patrol)
                 .End()
                 .Initialize()
-                .Start(State.Idle);
-
-            
+                .Start(State.Patrol);
 
             // update machine
             bool running = true;
