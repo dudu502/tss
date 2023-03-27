@@ -67,11 +67,9 @@ namespace Task.Switch.Structure.FSM
                 machine.Update();
                 Thread.Sleep(100);
             }
-            Console.WriteLine(Guid.NewGuid().ToString());
-       
+            
             machine.Stop();
             Console.WriteLine("FSM Stop");
-        }
-        
+        }   
     }
 }

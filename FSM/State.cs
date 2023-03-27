@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Task.Switch.Structure.FSM
 {
     public class State<T> where T:Enum
     {
+        internal readonly T Name;
+        readonly StateMachine<T> m_Machine;
         internal readonly List<Translation<T>> Translations = new List<Translation<T>>();
         private Action m_OnInitialize;
         private Action m_OnEnter;
         private Action m_OnUpdate;
         private Action m_OnExit;
-        internal readonly T Name;
-        private readonly StateMachine<T> m_Machine;
+
         public State(T name,StateMachine<T> stateMachine)
         {
             Name = name;
@@ -23,9 +23,9 @@ namespace Task.Switch.Structure.FSM
         {
             return m_Machine;
         }
-        public Translation<T> Translate(Func<bool> valid,Action transfer = null)
+        public Translation<T> Translate(Func<bool> valid)
         {
-            Translation<T> translation = new Translation<T>(this, valid, transfer);
+            Translation<T> translation = new Translation<T>(this, valid);
             Translations.Add(translation);
             return translation;
         }
@@ -46,7 +46,7 @@ namespace Task.Switch.Structure.FSM
         {
             if (m_OnEnter != null)
             {
-                if (StateMachine<T>.Logger!=null && StateMachine<T>.Logger.IsDebugEnabled)
+                if (StateMachine<T>.Logger != null && StateMachine<T>.Logger.IsDebugEnabled)
                     StateMachine<T>.Logger.Debug($"{Name} m_OnEnter");
                 m_OnEnter();
             }
@@ -55,7 +55,7 @@ namespace Task.Switch.Structure.FSM
         {
             if (m_OnUpdate != null)
             {
-                if(StateMachine<T>.Logger != null && StateMachine<T>.Logger.IsDebugEnabled)
+                if (StateMachine<T>.Logger != null && StateMachine<T>.Logger.IsDebugEnabled)
                     StateMachine<T>.Logger.Debug($"{Name} OnUpdate");
                 m_OnUpdate();
             }
@@ -64,7 +64,7 @@ namespace Task.Switch.Structure.FSM
         {
             if (m_OnExit != null)
             {
-                if(StateMachine<T>.Logger != null && StateMachine<T>.Logger.IsDebugEnabled)
+                if (StateMachine<T>.Logger != null && StateMachine<T>.Logger.IsDebugEnabled)
                     StateMachine<T>.Logger.Debug($"{Name} OnExit");
                 m_OnExit();
             }

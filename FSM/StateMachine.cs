@@ -15,7 +15,7 @@ namespace Task.Switch.Structure.FSM
         private State<T> m_CurrentActiveState = null;
         private bool m_Running = false;
         private bool m_Inited = false;
-        private object m_Parameter;
+        private readonly object m_Parameter;
         public StateMachine(object param)
         {
             m_Parameter = param;
@@ -23,7 +23,7 @@ namespace Task.Switch.Structure.FSM
 
         public PARAM GetParameter<PARAM>()
         {
-            if(m_Parameter != null)
+            if (m_Parameter != null)
                 return (PARAM)m_Parameter;
             return default(PARAM);
         }
@@ -51,9 +51,9 @@ namespace Task.Switch.Structure.FSM
         {
             foreach (State<T> state in m_States)
             {
-                if (!Enum.Equals(to,state.Name))
+                if (!Enum.Equals(to, state.Name))
                 {
-                    Translation<T> translation = new Translation<T>(state, valid, transfer);
+                    Translation<T> translation = new Translation<T>(state, valid).Transfer(transfer);
                     translation.To(to);
                     state.Translations.Add(translation);
                 }
