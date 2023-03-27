@@ -7,30 +7,37 @@ namespace Task.Switch.Structure.FSM
         private Action m_Transfer;
         public T ToStateName { private set; get; }
         private readonly State<T> m_Current;
-        public Translation(State<T> state,Func<bool> valid)
+        public Translation(State<T> state,Func<bool> valid,Action transfer)
         {
             m_Current = state;
             m_Valid = valid;
+            m_Transfer = transfer;
         }
         public State<T> To(T stateName)
         {
             ToStateName = stateName;
             return m_Current;
         }
-        public bool OnValid()
+        internal bool OnValid()
         {
+            bool valid = false;
             if (m_Valid != null)
-                return m_Valid();
-            return false;
+            {
+                valid = m_Valid();
+            }
+            if (StateMachine<T>.Logger != null && StateMachine<T>.Logger.IsDebugEnabled)
+                StateMachine<T>.Logger.Debug($"State:{m_Current.Name} ToState:{ToStateName} OnValid {valid}");
+            return valid;
         }
-        public Translation<T> Transfer(Action transfer)
+
+        internal void OnTransfer()
         {
-            m_Transfer = transfer;
-            return this;
-        }
-        public void OnTransfer()
-        {
-            m_Transfer?.Invoke();
+            if(m_Transfer != null)
+            {
+                if (StateMachine<T>.Logger != null && StateMachine<T>.Logger.IsDebugEnabled)
+                    StateMachine<T>.Logger.Debug($"State:{m_Current.Name} ToState:{ToStateName} OnTransfer");
+                m_Transfer();
+            }
         }
     }
 }

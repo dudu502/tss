@@ -23,9 +23,9 @@ namespace Task.Switch.Structure.FSM
         {
             return m_Machine;
         }
-        public Translation<T> Translate(Func<bool> valid)
+        public Translation<T> Translate(Func<bool> valid,Action transfer = null)
         {
-            Translation<T> translation = new Translation<T>(this,valid);
+            Translation<T> translation = new Translation<T>(this, valid, transfer);
             Translations.Add(translation);
             return translation;
         }
@@ -33,21 +33,41 @@ namespace Task.Switch.Structure.FSM
         public State<T> Enter(Action enter) { m_OnEnter = enter; return this; }
         public State<T> Update(Action update) { m_OnUpdate = update; return this; }
         public State<T> Exit(Action exit) { m_OnExit = exit; return this; }
-        public void OnInitialize()
+        internal void OnInitialize()
         {
-            m_OnInitialize?.Invoke();
+            if (m_OnInitialize != null)
+            {
+                if (StateMachine<T>.Logger != null && StateMachine<T>.Logger.IsDebugEnabled)
+                    StateMachine<T>.Logger.Debug($"{Name} OnInitialize");
+                m_OnInitialize();
+            }
         }
-        public void OnEnter()
+        internal void OnEnter()
         {
-            m_OnEnter?.Invoke();
+            if (m_OnEnter != null)
+            {
+                if (StateMachine<T>.Logger!=null && StateMachine<T>.Logger.IsDebugEnabled)
+                    StateMachine<T>.Logger.Debug($"{Name} m_OnEnter");
+                m_OnEnter();
+            }
         }
-        public void OnUpdate()
+        internal void OnUpdate()
         {
-            m_OnUpdate?.Invoke();
+            if (m_OnUpdate != null)
+            {
+                if(StateMachine<T>.Logger != null && StateMachine<T>.Logger.IsDebugEnabled)
+                    StateMachine<T>.Logger.Debug($"{Name} OnUpdate");
+                m_OnUpdate();
+            }
         }
-        public void OnExit()
+        internal void OnExit()
         {
-            m_OnExit?.Invoke();
+            if (m_OnExit != null)
+            {
+                if(StateMachine<T>.Logger != null && StateMachine<T>.Logger.IsDebugEnabled)
+                    StateMachine<T>.Logger.Debug($"{Name} OnExit");
+                m_OnExit();
+            }
         }
     }
 }

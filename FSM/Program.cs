@@ -15,7 +15,7 @@ namespace Task.Switch.Structure.FSM
         static void Main(string[] args)
         {     
             // Create a state machine
-            var machine = new StateMachine<State>();
+            var machine = new StateMachine<State>(new object());
             const int r = 5;
             bool sayHiComplete = false;
             int hp = 10;
@@ -33,7 +33,7 @@ namespace Task.Switch.Structure.FSM
                         hp++;
                         Console.WriteLine($"Patral ING.... distanceBetweenOrc:{distanceBetweenOrc} distanceBetweenGobin:{distanceBetweenGoblin} Hp:{hp} orcHp:{orcHp}");
                     })
-                    .Translate(() => distanceBetweenOrc < r && orcHp>0).To(State.Battle)
+                    .Translate(() => distanceBetweenOrc < r && orcHp > 0).To(State.Battle)
                     .Translate(() => distanceBetweenGoblin < r&&!sayHiComplete).To(State.SayHi)
                 .End()
                 .NewState(State.Battle)
