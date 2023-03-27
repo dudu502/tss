@@ -7,72 +7,59 @@ namespace Task.Switch.Structure.FSM
     {
         enum State
         {
-            SayHi,
-            Patrol,
-            Battle,
-            Escape
+            Idle,
+            Run,
+        }
+        class StateObject
+        {
+            public const int MAX_PHYSICAL_STRENGTH = 50;
+            public int physical_strength = 25;
+
+            public void Log()
+            {
+                StateMachine<State>.Logger.Debug("Current physical_strength "+ physical_strength);
+            }
+        }
+        class ConsoleLogger : ILogger
+        {
+            public bool IsDebugEnabled { set; get; } = true;
+         
+            public void Debug(string value)
+            {
+                Console.WriteLine(value);
+            }
         }
         static void Main(string[] args)
         {     
             // Create a state machine
-            var machine = new StateMachine<State>(new object());
-            const int r = 5;
-            bool sayHiComplete = false;
-            int hp = 10;
-            int orcHp = 20;
-            int distanceBetweenOrc = 10;
-            int distanceBetweenGoblin = 12;
-            machine
-                .NewState(State.Patrol)
-                    .Initialize(() => Console.WriteLine("Init Patral State"))
-                    .Enter(() => Console.WriteLine("Enter Patral State"))
-                    .Update(() =>
-                    {
-                        distanceBetweenOrc--;
-                        distanceBetweenGoblin--;
-                        hp++;
-                        Console.WriteLine($"Patral ING.... distanceBetweenOrc:{distanceBetweenOrc} distanceBetweenGobin:{distanceBetweenGoblin} Hp:{hp} orcHp:{orcHp}");
-                    })
-                    .Translate(() => distanceBetweenOrc < r && orcHp > 0).To(State.Battle)
-                    .Translate(() => distanceBetweenGoblin < r&&!sayHiComplete).To(State.SayHi)
-                .End()
-                .NewState(State.Battle)
-                    .Initialize(() => Console.WriteLine("Init Battle State"))
-                    .Enter(() => Console.WriteLine("Enter Battle State"))
-                    .Update(() =>
-                    {
-                        hp--;
-                        orcHp--;
-                        Console.WriteLine("Fight ING.... Current HP " + hp+" ocrHp "+orcHp);
-                    })
-                    .Translate(() => hp < 5).To(State.Escape)
-                    .Translate(()=> orcHp < 0).To(State.Patrol)
-                .End()
-                .NewState(State.Escape)
-                    .Initialize(() => Console.WriteLine("Init Escape State"))
-                    .Enter(() => Console.WriteLine("Enter Escape State"))
-                    .Update(() =>
-                    {
-                        distanceBetweenOrc++;
-                        distanceBetweenGoblin++;
-                        Console.WriteLine($"Escape ING.... distanceBetweenOrc:{distanceBetweenOrc} distanceBetweenGobin:{distanceBetweenGoblin} Hp:{hp} orcHp:{orcHp}");
-                    })
-                    .Translate(() => distanceBetweenOrc > 5 * r).To(State.Patrol)
-                .End()
-                .NewState(State.SayHi)
-                    .Initialize(() => Console.WriteLine("Init SayHi State"))
-                    .Enter(() => Console.WriteLine("Enter SayHi State"))
-                    .Update(() =>
-                    {
-                        sayHiComplete = true;
-                        Console.WriteLine("Say Hi to Goblin");
-                    })
-                    .Translate(() => sayHiComplete).To(State.Patrol)
-                .End()
-                .Initialize()
-                .Start(State.Patrol);
+            var machine = new StateMachine<State>(new StateObject());
+            StateMachine<State>.Logger = new ConsoleLogger();
 
-            // update machine
+            machine
+                .NewState(State.Idle)
+                    .Initialize(() => { })
+                    .Enter(() => { })
+                    .Update(() =>
+                    {
+                        machine.GetParameter<StateObject>().physical_strength++;
+                        machine.GetParameter<StateObject>().Log();
+                    })
+                    .Exit(() => { })
+                    .Translate(() => machine.GetParameter<StateObject>().physical_strength >= StateObject.MAX_PHYSICAL_STRENGTH).To(State.Run)
+                .End()
+                .NewState(State.Run)
+                    .Initialize(() => { })
+                    .Enter(() => { })
+                    .Update(() =>
+                    {
+                        machine.GetParameter<StateObject>().physical_strength--;
+                        machine.GetParameter<StateObject>().Log();
+                    })
+                    .Exit(() => { })
+                    .Translate(() => machine.GetParameter<StateObject>().physical_strength <= 0).To(State.Idle)
+                .End()
+                .Initialize().Start(State.Idle);
+
             bool running = true;
             ThreadPool.QueueUserWorkItem(_ => { var key = Console.ReadKey(); running = false; });
             while (running)

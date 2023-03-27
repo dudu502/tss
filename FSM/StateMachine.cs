@@ -51,7 +51,7 @@ namespace Task.Switch.Structure.FSM
         {
             foreach (State<T> state in m_States)
             {
-                if (!state.Name.Equals(to))
+                if (!Enum.Equals(to,state.Name))
                 {
                     Translation<T> translation = new Translation<T>(state, valid, transfer);
                     translation.To(to);
