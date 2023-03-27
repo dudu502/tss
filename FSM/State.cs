@@ -6,12 +6,12 @@ namespace Task.Switch.Structure.FSM
 {
     public class State<T> where T:Enum
     {
-        public readonly List<Translation<T>> Translations = new List<Translation<T>>();
+        internal readonly List<Translation<T>> Translations = new List<Translation<T>>();
         private Action m_OnInitialize;
         private Action m_OnEnter;
         private Action m_OnUpdate;
         private Action m_OnExit;
-        public readonly T Name;
+        internal readonly T Name;
         private readonly StateMachine<T> m_Machine;
         public State(T name,StateMachine<T> stateMachine)
         {

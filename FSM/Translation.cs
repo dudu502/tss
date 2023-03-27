@@ -5,7 +5,7 @@ namespace Task.Switch.Structure.FSM
     {
         private readonly Func<bool> m_Valid;
         private Action m_Transfer;
-        public T ToStateName { private set; get; }
+        internal T ToStateName { private set; get; }
         private readonly State<T> m_Current;
         public Translation(State<T> state,Func<bool> valid,Action transfer)
         {
