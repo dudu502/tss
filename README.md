@@ -3,455 +3,310 @@ Implement finite state machine
 
 
 ``` csharp
-            int timer = 0;
-            const int maxTimerCount = 10;
+            // Create a state machine
+            StateMachine<State, StateObject>.Log = Console.WriteLine;
+            var machine = new StateMachine<State,StateObject>(new StateObject());
+            machine
+                .NewState(State.Idle)
+                    .Initialize((stateObj) => { })
+                    .Enter((stateObj) => { })            
+                    .Update((stateObj) =>
+                    {
+                        stateObj.physical_strength++;
+                        stateObj.Log();
+                    })
+                    .Translate((stateObj) => stateObj.physical_strength >= StateObject.MAX_PHYSICAL_STRENGTH).To(State.Run)
+                    .Exit((stateObj) => { })             
+                .End()
+                .NewState(State.Run)
+                    .Initialize((stateObj) => { })
+                    .Enter((stateObj) => { })
+                    .Update((stateObj) =>
+                    {
+                        stateObj.physical_strength--;
+                        stateObj.Log();
+                    })
+                    .Translate((stateObj) => stateObj.physical_strength <= 0).To(State.Idle)
+                    .Exit((stateObj) => { })
+                .End()
+                .Initialize().Start(State.Idle);
 
-            int timer1 = 0;
-            const int maxTimer1Count = 20;
-            // add new state
-            machine.NewState("空闲")
-                 .Initialize(() => Console.WriteLine("初始化 空闲"))
-                 .Enter(() =>
-                 {
-                     timer = 0;
-                     Console.WriteLine("进入 空闲");
-                 })
-                 .Update(() => Console.WriteLine("空闲... " + timer++))
-                 .Exit(() => Console.WriteLine("退出 空闲"))
-                 .Translate("空闲=>巡逻").Valid(() => timer >= maxTimerCount).Transfer(() => Console.WriteLine("转化中 ...")).To("巡逻");
-
-            machine.NewState("巡逻")
-                .Initialize(() => Console.WriteLine("初始化 巡逻"))
-                .Enter(() =>
-                {
-                    timer = 0;
-                    Console.WriteLine("进入 巡逻");
-                })
-                .Update(() => Console.WriteLine("巡逻... " + timer++ + " 危险系数" + timer1++))
-                .Exit(() => Console.WriteLine("退出 巡逻"))
-                .Translate("巡逻=>逃跑").Valid(() => timer1 > maxTimer1Count).To("逃跑")
-                .Translate("巡逻=>空闲").Valid(() => timer >= maxTimerCount).Transfer(() => Console.WriteLine("转化中 ...")).To("空闲");
-
-            machine.NewState("逃跑")
-               .Initialize(() => Console.WriteLine("初始化 逃跑"))
-               .Enter(() =>
-               {
-                   timer = 0;
-                   Console.WriteLine("进入 逃跑");
-               })
-               .Update(() => Console.WriteLine("逃跑... " + timer1--))
-               .Exit(() => Console.WriteLine("退出 逃跑"))
-               .Translate("逃跑=>空闲").Valid(() => timer1 == 0).Transfer(() => Console.WriteLine("转化中 ...")).To("空闲");
-
+            bool running = true;
+            ThreadPool.QueueUserWorkItem(_ => { var key = Console.ReadKey(); running = false; });
+            while (running)
+            {
+                machine.Update();
+                Thread.Sleep(100);
+            }
             
-
-            //initialize machine
-            machine.Initialize();
+            machine.Stop();
+            Console.WriteLine("FSM Stop");
 ```
 
 
 ``` logs
 
 
-
-初始化 空闲
-初始化 巡逻
-初始化 逃跑
-进入 空闲
-空闲... 0
-空闲... 1
-空闲... 2
-空闲... 3
-空闲... 4
-空闲... 5
-空闲... 6
-空闲... 7
-空闲... 8
-空闲... 9
-退出 空闲
-转化中 ...
-进入 巡逻
-巡逻... 0 危险系数0
-巡逻... 1 危险系数1
-巡逻... 2 危险系数2
-巡逻... 3 危险系数3
-巡逻... 4 危险系数4
-巡逻... 5 危险系数5
-巡逻... 6 危险系数6
-巡逻... 7 危险系数7
-巡逻... 8 危险系数8
-巡逻... 9 危险系数9
-退出 巡逻
-转化中 ...
-进入 空闲
-空闲... 0
-空闲... 1
-空闲... 2
-空闲... 3
-空闲... 4
-空闲... 5
-空闲... 6
-空闲... 7
-空闲... 8
-空闲... 9
-退出 空闲
-转化中 ...
-进入 巡逻
-巡逻... 0 危险系数10
-巡逻... 1 危险系数11
-巡逻... 2 危险系数12
-巡逻... 3 危险系数13
-巡逻... 4 危险系数14
-巡逻... 5 危险系数15
-巡逻... 6 危险系数16
-巡逻... 7 危险系数17
-巡逻... 8 危险系数18
-巡逻... 9 危险系数19
-退出 巡逻
-转化中 ...
-进入 空闲
-空闲... 0
-空闲... 1
-空闲... 2
-空闲... 3
-空闲... 4
-空闲... 5
-空闲... 6
-空闲... 7
-空闲... 8
-空闲... 9
-退出 空闲
-转化中 ...
-进入 巡逻
-巡逻... 0 危险系数20
-退出 巡逻
-进入 逃跑
-逃跑... 21
-逃跑... 20
-逃跑... 19
-逃跑... 18
-逃跑... 17
-逃跑... 16
-逃跑... 15
-逃跑... 14
-逃跑... 13
-逃跑... 12
-逃跑... 11
-逃跑... 10
-逃跑... 9
-逃跑... 8
-逃跑... 7
-逃跑... 6
-逃跑... 5
-逃跑... 4
-逃跑... 3
-逃跑... 2
-逃跑... 1
-退出 逃跑
-转化中 ...
-进入 空闲
-空闲... 0
-空闲... 1
-空闲... 2
-空闲... 3
-空闲... 4
-空闲... 5
-空闲... 6
-空闲... 7
-空闲... 8
-空闲... 9
-退出 空闲
-转化中 ...
-进入 巡逻
-巡逻... 0 危险系数0
-巡逻... 1 危险系数1
-巡逻... 2 危险系数2
-巡逻... 3 危险系数3
-巡逻... 4 危险系数4
-巡逻... 5 危险系数5
-巡逻... 6 危险系数6
-巡逻... 7 危险系数7
-巡逻... 8 危险系数8
-巡逻... 9 危险系数9
-退出 巡逻
-转化中 ...
-进入 空闲
-空闲... 0
-空闲... 1
-空闲... 2
-空闲... 3
-空闲... 4
-空闲... 5
-空闲... 6
-空闲... 7
-空闲... 8
-空闲... 9
-退出 空闲
-转化中 ...
-进入 巡逻
-巡逻... 0 危险系数10
-巡逻... 1 危险系数11
-巡逻... 2 危险系数12
-巡逻... 3 危险系数13
-巡逻... 4 危险系数14
-巡逻... 5 危险系数15
-巡逻... 6 危险系数16
-巡逻... 7 危险系数17
-巡逻... 8 危险系数18
-巡逻... 9 危险系数19
-退出 巡逻
-转化中 ...
-进入 空闲
-空闲... 0
-空闲... 1
-空闲... 2
-空闲... 3
-空闲... 4
-空闲... 5
-空闲... 6
-空闲... 7
-空闲... 8
-空闲... 9
-退出 空闲
-转化中 ...
-进入 巡逻
-巡逻... 0 危险系数20
-退出 巡逻
-进入 逃跑
-逃跑... 21
-逃跑... 20
-逃跑... 19
-逃跑... 18
-逃跑... 17
-逃跑... 16
-逃跑... 15
-逃跑... 14
-逃跑... 13
-逃跑... 12
-逃跑... 11
-逃跑... 10
-逃跑... 9
-逃跑... 8
-逃跑... 7
-逃跑... 6
-逃跑... 5
-逃跑... 4
-逃跑... 3
-逃跑... 2
-逃跑... 1
-退出 逃跑
-转化中 ...
-进入 空闲
-空闲... 0
-空闲... 1
-空闲... 2
-空闲... 3
-空闲... 4
-空闲... 5
-空闲... 6
-空闲... 7
-空闲... 8
-空闲... 9
-退出 空闲
-转化中 ...
-进入 巡逻
-巡逻... 0 危险系数0
-巡逻... 1 危险系数1
-巡逻... 2 危险系数2
-巡逻... 3 危险系数3
-巡逻... 4 危险系数4
-巡逻... 5 危险系数5
-巡逻... 6 危险系数6
-巡逻... 7 危险系数7
-巡逻... 8 危险系数8
-巡逻... 9 危险系数9
-退出 巡逻
-转化中 ...
-进入 空闲
-空闲... 0
-空闲... 1
-空闲... 2
-空闲... 3
-空闲... 4
-空闲... 5
-空闲... 6
-空闲... 7
-空闲... 8
-空闲... 9
-退出 空闲
-转化中 ...
-进入 巡逻
-巡逻... 0 危险系数10
-巡逻... 1 危险系数11
-巡逻... 2 危险系数12
-巡逻... 3 危险系数13
-巡逻... 4 危险系数14
-巡逻... 5 危险系数15
-巡逻... 6 危险系数16
-巡逻... 7 危险系数17
-巡逻... 8 危险系数18
-巡逻... 9 危险系数19
-退出 巡逻
-转化中 ...
-进入 空闲
-空闲... 0
-空闲... 1
-空闲... 2
-空闲... 3
-空闲... 4
-空闲... 5
-空闲... 6
-空闲... 7
-空闲... 8
-空闲... 9
-退出 空闲
-转化中 ...
-进入 巡逻
-巡逻... 0 危险系数20
-退出 巡逻
-进入 逃跑
-逃跑... 21
-逃跑... 20
-逃跑... 19
-逃跑... 18
-逃跑... 17
-逃跑... 16
-逃跑... 15
-逃跑... 14
-逃跑... 13
-逃跑... 12
-逃跑... 11
-逃跑... 10
-逃跑... 9
-逃跑... 8
-逃跑... 7
-逃跑... 6
-逃跑... 5
-逃跑... 4
-逃跑... 3
-逃跑... 2
-逃跑... 1
-退出 逃跑
-转化中 ...
-进入 空闲
-空闲... 0
-空闲... 1
-空闲... 2
-空闲... 3
-空闲... 4
-空闲... 5
-空闲... 6
-空闲... 7
-空闲... 8
-空闲... 9
-退出 空闲
-转化中 ...
-进入 巡逻
-巡逻... 0 危险系数0
-巡逻... 1 危险系数1
-巡逻... 2 危险系数2
-巡逻... 3 危险系数3
-巡逻... 4 危险系数4
-巡逻... 5 危险系数5
-巡逻... 6 危险系数6
-巡逻... 7 危险系数7
-巡逻... 8 危险系数8
-巡逻... 9 危险系数9
-退出 巡逻
-转化中 ...
-进入 空闲
-空闲... 0
-空闲... 1
-空闲... 2
-空闲... 3
-空闲... 4
-空闲... 5
-空闲... 6
-空闲... 7
-空闲... 8
-空闲... 9
-退出 空闲
-转化中 ...
-进入 巡逻
-巡逻... 0 危险系数10
-巡逻... 1 危险系数11
-巡逻... 2 危险系数12
-巡逻... 3 危险系数13
-巡逻... 4 危险系数14
-巡逻... 5 危险系数15
-巡逻... 6 危险系数16
-巡逻... 7 危险系数17
-巡逻... 8 危险系数18
-巡逻... 9 危险系数19
-退出 巡逻
-转化中 ...
-进入 空闲
-空闲... 0
-空闲... 1
-空闲... 2
-空闲... 3
-空闲... 4
-空闲... 5
-空闲... 6
-空闲... 7
-空闲... 8
-空闲... 9
-退出 空闲
-转化中 ...
-进入 巡逻
-巡逻... 0 危险系数20
-退出 巡逻
-进入 逃跑
-逃跑... 21
-逃跑... 20
-逃跑... 19
-逃跑... 18
-逃跑... 17
-逃跑... 16
-逃跑... 15
-逃跑... 14
-逃跑... 13
-逃跑... 12
-逃跑... 11
-逃跑... 10
-逃跑... 9
-逃跑... 8
-逃跑... 7
-逃跑... 6
-逃跑... 5
-逃跑... 4
-逃跑... 3
-逃跑... 2
-逃跑... 1
-退出 逃跑
-转化中 ...
-进入 空闲
-空闲... 0
-空闲... 1
-空闲... 2
-空闲... 3
-空闲... 4
-空闲... 5
-空闲... 6
-空闲... 7
-空闲... 8
-空闲... 9
-退出 空闲
-转化中 ...
-进入 巡逻
-巡逻... 0 危险系数0
-巡逻... 1 危险系数1
-巡逻... 2 危险系数2
-巡逻... 3 危险系数3
-巡逻... 4 危险系数4
-巡逻... 5 危险系数5
-巡逻... 6 危险系数6
-巡逻... 7 危险系数7
-巡逻... 8 危险系数8
-巡逻... 9 危险系数9
-退出 巡逻
-转化中 ...
-进入 空闲
-空闲... 0
-空闲... 1
+Idle OnInitialize
+Run OnInitialize
+Idle m_OnEnter
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 26
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 27
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 28
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 29
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 30
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 31
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 32
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 33
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 34
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 35
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 36
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 37
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 38
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 39
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 40
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 41
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 42
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 43
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 44
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 45
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 46
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 47
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 48
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 49
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 50
+State:Idle ToState:Run OnValid True
+Idle OnExit
+Run m_OnEnter
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 49
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 48
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 47
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 46
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 45
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 44
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 43
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 42
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 41
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 40
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 39
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 38
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 37
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 36
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 35
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 34
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 33
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 32
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 31
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 30
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 29
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 28
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 27
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 26
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 25
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 24
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 23
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 22
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 21
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 20
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 19
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 18
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 17
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 16
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 15
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 14
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 13
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 12
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 11
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 10
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 9
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 8
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 7
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 6
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 5
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 4
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 3
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 2
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 1
+State:Run ToState:Idle OnValid False
+Run OnUpdate
+Current physical_strength 0
+State:Run ToState:Idle OnValid True
+Run OnExit
+Idle m_OnEnter
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 1
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 2
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 3
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 4
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 5
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 6
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 7
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 8
+State:Idle ToState:Run OnValid False
+Idle OnUpdate
+Current physical_strength 9
+FSM Stop
 ```
