@@ -25,30 +25,30 @@ namespace Task.Switch.Structure.FSM
         static void Main(string[] args)
         {
             // Create a state machine
-            StateMachine<State>.Log = Console.WriteLine;
-            var machine = new StateMachine<State>(new StateObject());
+            StateMachine<State, StateObject>.Log = Console.WriteLine;
+            var machine = new StateMachine<State,StateObject>(new StateObject());
             machine
                 .NewState(State.Idle)
-                    .Initialize(() => { })
-                    .Enter(() => { })
-                    .Update(() =>
+                    .Initialize((stateObj) => { })
+                    .Enter((stateObj) => { })            
+                    .Update((stateObj) =>
                     {
-                        machine.GetParameter<StateObject>().physical_strength++;
-                        machine.GetParameter<StateObject>().Log();
+                        stateObj.physical_strength++;
+                        stateObj.Log();
                     })
-                    .Exit(() => { })
-                    .Translate(() => machine.GetParameter<StateObject>().physical_strength >= StateObject.MAX_PHYSICAL_STRENGTH).To(State.Run)
+                    .Translate((stateObj) => stateObj.physical_strength >= StateObject.MAX_PHYSICAL_STRENGTH).To(State.Run)
+                    .Exit((stateObj) => { })             
                 .End()
                 .NewState(State.Run)
-                    .Initialize(() => { })
-                    .Enter(() => { })
-                    .Update(() =>
+                    .Initialize((stateObj) => { })
+                    .Enter((stateObj) => { })
+                    .Update((stateObj) =>
                     {
-                        machine.GetParameter<StateObject>().physical_strength--;
-                        machine.GetParameter<StateObject>().Log();
+                        stateObj.physical_strength--;
+                        stateObj.Log();
                     })
-                    .Exit(() => { })
-                    .Translate(() => machine.GetParameter<StateObject>().physical_strength <= 0).To(State.Idle)
+                    .Translate((stateObj) => stateObj.physical_strength <= 0).To(State.Idle)
+                    .Exit((stateObj) => { })
                 .End()
                 .Initialize().Start(State.Idle);
 
