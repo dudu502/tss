@@ -10,6 +10,7 @@ namespace Task.Switch.Structure.FSM
             Idle,
             Run,
         }
+
         class StateObject
         {
             public const int MAX_PHYSICAL_STRENGTH = 50;
@@ -17,24 +18,15 @@ namespace Task.Switch.Structure.FSM
 
             public void Log()
             {
-                StateMachine<State>.Logger.Debug("Current physical_strength "+ physical_strength);
+                Console.WriteLine("Current physical_strength "+ physical_strength);
             }
         }
-        class ConsoleLogger : ILogger
-        {
-            public bool IsDebugEnabled { set; get; } = true;
-         
-            public void Debug(string value)
-            {
-                Console.WriteLine(value);
-            }
-        }
-        static void Main(string[] args)
-        {     
-            // Create a state machine
-            var machine = new StateMachine<State>(new StateObject());
-            StateMachine<State>.Logger = new ConsoleLogger();
 
+        static void Main(string[] args)
+        {
+            // Create a state machine
+            StateMachine<State>.Log = Console.WriteLine;
+            var machine = new StateMachine<State>(new StateObject());
             machine
                 .NewState(State.Idle)
                     .Initialize(() => { })

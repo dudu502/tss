@@ -22,8 +22,8 @@ namespace Task.Switch.Structure.FSM
             bool valid = false;
             if (m_Valid != null)
                 valid = m_Valid();
-            if (StateMachine<T>.Logger != null && StateMachine<T>.Logger.IsDebugEnabled)
-                StateMachine<T>.Logger.Debug($"State:{m_Current.Name} ToState:{ToStateName} OnValid {valid}");
+            if (StateMachine<T>.Log != null)
+                StateMachine<T>.Log($"State:{m_Current.Name} ToState:{ToStateName} OnValid {valid}");
             return valid;
         }
         public Translation<T> Transfer(Action transfer)
@@ -35,8 +35,8 @@ namespace Task.Switch.Structure.FSM
         {
             if (m_Transfer != null)
             {
-                if (StateMachine<T>.Logger != null && StateMachine<T>.Logger.IsDebugEnabled)
-                    StateMachine<T>.Logger.Debug($"State:{m_Current.Name} ToState:{ToStateName} OnTransfer");
+                if (StateMachine<T>.Log != null)
+                    StateMachine<T>.Log($"State:{m_Current.Name} ToState:{ToStateName} OnTransfer");
                 m_Transfer();
             }
         }

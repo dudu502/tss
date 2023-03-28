@@ -3,14 +3,9 @@ using System.Collections.Generic;
 
 namespace Task.Switch.Structure.FSM
 {
-    public interface ILogger
-    {
-        bool IsDebugEnabled { get; set; }
-        void Debug(string value);
-    }
     public class StateMachine<T> where T : Enum
     {
-        public static ILogger Logger;
+        public static Action<string> Log;
         private readonly List<State<T>> m_States = new List<State<T>>();
         private State<T> m_CurrentActiveState = null;
         private bool m_Running = false;
@@ -33,13 +28,25 @@ namespace Task.Switch.Structure.FSM
             if (m_Inited)
             {
                 m_Running = true;
-                m_CurrentActiveState = Find(startStateName);
+                m_CurrentActiveState = GetState(startStateName);
                 m_CurrentActiveState.OnEnter();
             }
         }
         public void Stop()
         {
             m_Running = false;
+            m_Inited = false;
+            Log = null;
+            m_States.Clear();
+            m_CurrentActiveState = null;
+        }
+        public void Pause()
+        {
+            m_Running = false;
+        }
+        public void Resume()
+        {
+            m_Running = true;
         }
         public State<T> NewState(T stateName)
         {
@@ -67,7 +74,7 @@ namespace Task.Switch.Structure.FSM
             m_Inited = true;
             return this;
         }
-        private State<T> Find(T stateName)
+        private State<T> GetState(T stateName)
         {
             foreach (State<T> state in m_States)
             {
@@ -85,7 +92,7 @@ namespace Task.Switch.Structure.FSM
                     if (translation.OnValid())
                     {
                         m_CurrentActiveState.OnExit();
-                        m_CurrentActiveState = Find(translation.ToStateName);
+                        m_CurrentActiveState = GetState(translation.ToStateName);
                         translation.OnTransfer();
                         m_CurrentActiveState.OnEnter();
                         return;

@@ -37,8 +37,8 @@ namespace Task.Switch.Structure.FSM
         {
             if (m_OnInitialize != null)
             {
-                if (StateMachine<T>.Logger != null && StateMachine<T>.Logger.IsDebugEnabled)
-                    StateMachine<T>.Logger.Debug($"{Name} OnInitialize");
+                if (StateMachine<T>.Log != null)
+                    StateMachine<T>.Log($"{Name} OnInitialize");
                 m_OnInitialize();
             }
         }
@@ -46,8 +46,8 @@ namespace Task.Switch.Structure.FSM
         {
             if (m_OnEnter != null)
             {
-                if (StateMachine<T>.Logger != null && StateMachine<T>.Logger.IsDebugEnabled)
-                    StateMachine<T>.Logger.Debug($"{Name} m_OnEnter");
+                if (StateMachine<T>.Log != null)
+                    StateMachine<T>.Log($"{Name} m_OnEnter");
                 m_OnEnter();
             }
         }
@@ -55,8 +55,8 @@ namespace Task.Switch.Structure.FSM
         {
             if (m_OnUpdate != null)
             {
-                if (StateMachine<T>.Logger != null && StateMachine<T>.Logger.IsDebugEnabled)
-                    StateMachine<T>.Logger.Debug($"{Name} OnUpdate");
+                if (StateMachine<T>.Log != null)
+                    StateMachine<T>.Log($"{Name} OnUpdate");
                 m_OnUpdate();
             }
         }
@@ -64,8 +64,8 @@ namespace Task.Switch.Structure.FSM
         {
             if (m_OnExit != null)
             {
-                if (StateMachine<T>.Logger != null && StateMachine<T>.Logger.IsDebugEnabled)
-                    StateMachine<T>.Logger.Debug($"{Name} OnExit");
+                if (StateMachine<T>.Log != null)
+                    StateMachine<T>.Log($"{Name} OnExit");
                 m_OnExit();
             }
         }
