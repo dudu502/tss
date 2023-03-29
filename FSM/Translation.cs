@@ -1,13 +1,13 @@
 ﻿using System;
 namespace Task.Switch.Structure.FSM
 {
-    public class Translation<TState,TParam> where TState:Enum
+    public class Translation<TState, TParam> where TState : Enum
     {
-        private readonly Func<TParam,bool> m_Valid;
+        private readonly Func<TParam, bool> m_Valid;
         private Action<TParam> m_Transfer;
         internal TState ToStateName { private set; get; }
         private readonly State<TState, TParam> m_Current;
-        public Translation(State<TState, TParam> state,Func<TParam,bool> valid)
+        public Translation(State<TState, TParam> state, Func<TParam, bool> valid)
         {
             m_Current = state;
             m_Valid = valid;

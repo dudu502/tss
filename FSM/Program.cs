@@ -18,7 +18,7 @@ namespace Task.Switch.Structure.FSM
 
             public void Log()
             {
-                Console.WriteLine("Current physical_strength "+ physical_strength);
+                Console.WriteLine("Current physical_strength " + physical_strength);
             }
         }
 
@@ -26,18 +26,18 @@ namespace Task.Switch.Structure.FSM
         {
             // Create a state machine
             StateMachine<State, StateObject>.Log = Console.WriteLine;
-            var machine = new StateMachine<State,StateObject>(new StateObject());
+            var machine = new StateMachine<State, StateObject>(new StateObject());
             machine
                 .NewState(State.Idle)
                     .Initialize((stateObj) => { })
-                    .Enter((stateObj) => { })            
+                    .Enter((stateObj) => { })
                     .Update((stateObj) =>
                     {
                         stateObj.physical_strength++;
                         stateObj.Log();
                     })
                     .Translate((stateObj) => stateObj.physical_strength >= StateObject.MAX_PHYSICAL_STRENGTH).To(State.Run)
-                    .Exit((stateObj) => { })             
+                    .Exit((stateObj) => { })
                 .End()
                 .NewState(State.Run)
                     .Initialize((stateObj) => { })
@@ -59,9 +59,9 @@ namespace Task.Switch.Structure.FSM
                 machine.Tick();
                 Thread.Sleep(100);
             }
-            
+
             machine.Stop();
             Console.WriteLine("FSM Stop");
-        }   
+        }
     }
 }

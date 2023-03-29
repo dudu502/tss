@@ -3,10 +3,10 @@ using System.Collections.Generic;
 
 namespace Task.Switch.Structure.FSM
 {
-    public class StateMachine<TState,TParam> where TState : Enum
+    public class StateMachine<TState, TParam> where TState : Enum
     {
         public static Action<string> Log;
-        private readonly List<State<TState,TParam>> m_States = new List<State<TState,TParam>>();
+        private readonly List<State<TState, TParam>> m_States = new List<State<TState, TParam>>();
         private State<TState, TParam> m_CurrentActiveState = null;
         private bool m_Running = false;
         private bool m_Inited = false;
@@ -52,7 +52,7 @@ namespace Task.Switch.Structure.FSM
             m_States.Add(state);
             return state;
         }
-        public StateMachine<TState,TParam> Any(TState to, Func<TParam, bool> valid, Action<TParam> transfer = null)
+        public StateMachine<TState, TParam> Any(TState to, Func<TParam, bool> valid, Action<TParam> transfer = null)
         {
             foreach (State<TState, TParam> state in m_States)
             {
