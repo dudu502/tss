@@ -56,7 +56,7 @@ namespace Task.Switch.Structure.FSM
             ThreadPool.QueueUserWorkItem(_ => { var key = Console.ReadKey(); running = false; });
             while (running)
             {
-                machine.Update();
+                machine.Tick();
                 Thread.Sleep(100);
             }
             

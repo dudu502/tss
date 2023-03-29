@@ -3,20 +3,20 @@ using System.Collections.Generic;
 
 namespace Task.Switch.Structure.FSM
 {
-    public class StateMachine<TState,TPARAM> where TState : Enum
+    public class StateMachine<TState,TParam> where TState : Enum
     {
         public static Action<string> Log;
-        private readonly List<State<TState,TPARAM>> m_States = new List<State<TState,TPARAM>>();
-        private State<TState, TPARAM> m_CurrentActiveState = null;
+        private readonly List<State<TState,TParam>> m_States = new List<State<TState,TParam>>();
+        private State<TState, TParam> m_CurrentActiveState = null;
         private bool m_Running = false;
         private bool m_Inited = false;
-        private readonly TPARAM m_Parameter;
-        public StateMachine(TPARAM param)
+        private readonly TParam m_Parameter;
+        public StateMachine(TParam param)
         {
             m_Parameter = param;
         }
 
-        internal TPARAM GetParameter()
+        internal TParam GetParameter()
         {
             return m_Parameter;
         }
@@ -46,46 +46,46 @@ namespace Task.Switch.Structure.FSM
         {
             m_Running = true;
         }
-        public State<TState, TPARAM> NewState(TState stateName)
+        public State<TState, TParam> NewState(TState stateName)
         {
-            State<TState, TPARAM> state = new State<TState, TPARAM>(stateName, this);
+            State<TState, TParam> state = new State<TState, TParam>(stateName, this);
             m_States.Add(state);
             return state;
         }
-        public StateMachine<TState,TPARAM> Any(TState to, Func<TPARAM, bool> valid, Action<TPARAM> transfer = null)
+        public StateMachine<TState,TParam> Any(TState to, Func<TParam, bool> valid, Action<TParam> transfer = null)
         {
-            foreach (State<TState, TPARAM> state in m_States)
+            foreach (State<TState, TParam> state in m_States)
             {
                 if (!Enum.Equals(to, state.Name))
                 {
-                    Translation<TState, TPARAM> translation = new Translation<TState, TPARAM>(state, valid).Transfer(transfer);
+                    Translation<TState, TParam> translation = new Translation<TState, TParam>(state, valid).Transfer(transfer);
                     translation.To(to);
                     state.Translations.Add(translation);
                 }
             }
             return this;
         }
-        public StateMachine<TState, TPARAM> Initialize()
+        public StateMachine<TState, TParam> Initialize()
         {
-            foreach (State<TState, TPARAM> state in m_States)
+            foreach (State<TState, TParam> state in m_States)
                 state.OnInitialize();
             m_Inited = true;
             return this;
         }
-        private State<TState, TPARAM> GetState(TState stateName)
+        private State<TState, TParam> GetState(TState stateName)
         {
-            foreach (State<TState, TPARAM> state in m_States)
+            foreach (State<TState, TParam> state in m_States)
             {
                 if (Enum.Equals(state.Name, stateName))
                     return state;
             }
-            throw new Exception($"{stateName} is not exist! Please call NewState to create this state");
+            throw new Exception($"{stateName} is not exist! Please call {nameof(NewState)} to create this state");
         }
-        public void Update()
+        public void Tick()
         {
             if (m_Running && m_CurrentActiveState != null)
             {
-                foreach (Translation<TState, TPARAM> translation in m_CurrentActiveState.Translations)
+                foreach (Translation<TState, TParam> translation in m_CurrentActiveState.Translations)
                 {
                     if (translation.OnValid())
                     {
