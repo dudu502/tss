@@ -29,26 +29,26 @@ namespace Task.Switch.Structure.FSM
             var machine = new StateMachine<State, StateObject>(new StateObject());
             machine
                 .NewState(State.Idle)
-                    .Initialize((stateObj) => { })
-                    .Enter((stateObj) => { })
-                    .Update((stateObj) =>
+                    .Initialize((so) => { })
+                    .Enter((so) => { })
+                    .Update((so) =>
                     {
-                        stateObj.physical_strength++;
-                        stateObj.Log();
+                        so.physical_strength++;
+                        so.Log();
                     })
-                    .Translate((stateObj) => stateObj.physical_strength >= StateObject.MAX_PHYSICAL_STRENGTH).To(State.Run)
-                    .Exit((stateObj) => { })
+                    .Translate((so) => so.physical_strength >= StateObject.MAX_PHYSICAL_STRENGTH).To(State.Run)
+                    .Exit((so) => { })
                 .End()
                 .NewState(State.Run)
-                    .Initialize((stateObj) => { })
-                    .Enter((stateObj) => { })
-                    .Update((stateObj) =>
+                    .Initialize((so) => { })
+                    .Enter((so) => { })
+                    .Update((so) =>
                     {
-                        stateObj.physical_strength--;
-                        stateObj.Log();
+                        so.physical_strength--;
+                        so.Log();
                     })
-                    .Translate((stateObj) => stateObj.physical_strength <= 0).To(State.Idle)
-                    .Exit((stateObj) => { })
+                    .Translate((so) => so.physical_strength <= 0).To(State.Idle)
+                    .Exit((so) => { })
                 .End()
                 .Initialize().Start(State.Idle);
 
@@ -56,7 +56,7 @@ namespace Task.Switch.Structure.FSM
             ThreadPool.QueueUserWorkItem(_ => { var key = Console.ReadKey(); running = false; });
             while (running)
             {
-                machine.Tick();
+                machine.Update();
                 Thread.Sleep(100);
             }
 

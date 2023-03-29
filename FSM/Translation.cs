@@ -1,7 +1,7 @@
 ﻿using System;
 namespace Task.Switch.Structure.FSM
 {
-    public class Translation<TState, TParam> where TState : Enum
+    public class Translation<TState, TParam> where TState : Enum where TParam : class
     {
         private readonly Func<TParam, bool> m_Valid;
         private Action<TParam> m_Transfer;

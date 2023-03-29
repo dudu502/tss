@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Task.Switch.Structure.FSM
 {
-    public class State<TState, TParam> where TState : Enum
+    public class State<TState, TParam> where TState : Enum where TParam : class
     {
         internal readonly TState Name;
         readonly StateMachine<TState, TParam> m_Machine;

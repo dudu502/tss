@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Task.Switch.Structure.FSM
 {
-    public class StateMachine<TState, TParam> where TState : Enum
+    public class StateMachine<TState, TParam> where TState : Enum where TParam : class
     {
         public static Action<string> Log;
         private readonly List<State<TState, TParam>> m_States = new List<State<TState, TParam>>();
@@ -81,7 +81,7 @@ namespace Task.Switch.Structure.FSM
             }
             throw new Exception($"{stateName} is not exist! Please call {nameof(NewState)} to create this state");
         }
-        public void Tick()
+        public void Update()
         {
             if (m_Running && m_CurrentActiveState != null)
             {
