@@ -3,25 +3,25 @@ using System.Collections.Generic;
 
 namespace Task.Switch.Structure.FSM
 {
-    public class StateMachine<T,PARAM> where T : Enum
+    public class StateMachine<TState,TPARAM> where TState : Enum
     {
         public static Action<string> Log;
-        private readonly List<State<T,PARAM>> m_States = new List<State<T,PARAM>>();
-        private State<T, PARAM> m_CurrentActiveState = null;
+        private readonly List<State<TState,TPARAM>> m_States = new List<State<TState,TPARAM>>();
+        private State<TState, TPARAM> m_CurrentActiveState = null;
         private bool m_Running = false;
         private bool m_Inited = false;
-        private readonly PARAM m_Parameter;
-        public StateMachine(PARAM param)
+        private readonly TPARAM m_Parameter;
+        public StateMachine(TPARAM param)
         {
             m_Parameter = param;
         }
 
-        internal PARAM GetParameter()
+        internal TPARAM GetParameter()
         {
             return m_Parameter;
         }
 
-        public void Start(T startStateName)
+        public void Start(TState startStateName)
         {
             if (m_Inited)
             {
@@ -46,35 +46,35 @@ namespace Task.Switch.Structure.FSM
         {
             m_Running = true;
         }
-        public State<T, PARAM> NewState(T stateName)
+        public State<TState, TPARAM> NewState(TState stateName)
         {
-            State<T, PARAM> state = new State<T, PARAM>(stateName, this);
+            State<TState, TPARAM> state = new State<TState, TPARAM>(stateName, this);
             m_States.Add(state);
             return state;
         }
-        public StateMachine<T,PARAM> Any(T to, Func<PARAM, bool> valid, Action<PARAM> transfer = null)
+        public StateMachine<TState,TPARAM> Any(TState to, Func<TPARAM, bool> valid, Action<TPARAM> transfer = null)
         {
-            foreach (State<T, PARAM> state in m_States)
+            foreach (State<TState, TPARAM> state in m_States)
             {
                 if (!Enum.Equals(to, state.Name))
                 {
-                    Translation<T, PARAM> translation = new Translation<T, PARAM>(state, valid).Transfer(transfer);
+                    Translation<TState, TPARAM> translation = new Translation<TState, TPARAM>(state, valid).Transfer(transfer);
                     translation.To(to);
                     state.Translations.Add(translation);
                 }
             }
             return this;
         }
-        public StateMachine<T, PARAM> Initialize()
+        public StateMachine<TState, TPARAM> Initialize()
         {
-            foreach (State<T, PARAM> state in m_States)
+            foreach (State<TState, TPARAM> state in m_States)
                 state.OnInitialize();
             m_Inited = true;
             return this;
         }
-        private State<T, PARAM> GetState(T stateName)
+        private State<TState, TPARAM> GetState(TState stateName)
         {
-            foreach (State<T, PARAM> state in m_States)
+            foreach (State<TState, TPARAM> state in m_States)
             {
                 if (Enum.Equals(state.Name, stateName))
                     return state;
@@ -85,7 +85,7 @@ namespace Task.Switch.Structure.FSM
         {
             if (m_Running && m_CurrentActiveState != null)
             {
-                foreach (Translation<T, PARAM> translation in m_CurrentActiveState.Translations)
+                foreach (Translation<TState, TPARAM> translation in m_CurrentActiveState.Translations)
                 {
                     if (translation.OnValid())
                     {
