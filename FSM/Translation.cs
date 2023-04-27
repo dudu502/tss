@@ -1,7 +1,8 @@
 ﻿using System;
 namespace Task.Switch.Structure.FSM
 {
-    public class Translation<TState, TParam> where TState : Enum where TParam : class
+    public class Translation<TState, TParam>    where TState : Enum 
+                                                where TParam : class
     {
         private readonly Func<TParam, bool> m_Valid;
         private Action<TParam> m_Transfer;
@@ -13,12 +14,12 @@ namespace Task.Switch.Structure.FSM
             m_Valid = valid;
         }
 
-        public static Translation<TState, TParam> Clone(Translation<TState, TParam> origin, State<TState, TParam> state)
+        public static Translation<TState, TParam> Clone(Translation<TState, TParam> original, State<TState, TParam> state)
         {
-            Translation<TState, TParam> cloned = new Translation<TState, TParam>(state, origin.m_Valid);
-            cloned.m_Transfer = origin.m_Transfer;
-            cloned.ToStateName = origin.ToStateName;
-            return cloned;
+            Translation<TState, TParam> clone = new Translation<TState, TParam>(state, original.m_Valid);
+            clone.m_Transfer = original.m_Transfer;
+            clone.ToStateName = original.ToStateName;
+            return clone;
         }
         public State<TState, TParam> To(TState stateName)
         {

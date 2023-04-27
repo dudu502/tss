@@ -3,7 +3,8 @@ using System.Collections.Generic;
 
 namespace Task.Switch.Structure.FSM
 {
-    public class State<TState, TParam> where TState : Enum where TParam : class
+    public class State<TState, TParam>  where TState : Enum 
+                                        where TParam : class
     {
         internal readonly TState Name;
         readonly StateMachine<TState, TParam> m_Machine;
@@ -14,16 +15,16 @@ namespace Task.Switch.Structure.FSM
         private Action<TParam> m_OnExit;
 
 
-        internal static State<TState, TParam> Clone(State<TState, TParam> origin, StateMachine<TState, TParam> stateMachine)
+        internal static State<TState, TParam> Clone(State<TState, TParam> original, StateMachine<TState, TParam> stateMachine)
         {
-            State<TState, TParam> cloned = new State<TState, TParam>(origin.Name, stateMachine);
-            cloned.m_OnInitialize = origin.m_OnInitialize;
-            cloned.m_OnEnter = origin.m_OnEnter;
-            cloned.m_OnUpdate = origin.m_OnUpdate;
-            cloned.m_OnExit = origin.m_OnExit;
-            foreach (Translation<TState, TParam> translation in origin.Translations)
-                cloned.Translations.Add(Translation<TState, TParam>.Clone(translation, cloned));
-            return cloned;
+            State<TState, TParam> clone = new State<TState, TParam>(original.Name, stateMachine);
+            clone.m_OnInitialize = original.m_OnInitialize;
+            clone.m_OnEnter = original.m_OnEnter;
+            clone.m_OnUpdate = original.m_OnUpdate;
+            clone.m_OnExit = original.m_OnExit;
+            foreach (Translation<TState, TParam> translation in original.Translations)
+                clone.Translations.Add(Translation<TState, TParam>.Clone(translation, clone));
+            return clone;
         }
 
         public State(TState name, StateMachine<TState, TParam> stateMachine)

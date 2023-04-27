@@ -4,7 +4,8 @@ using System.Linq;
 
 namespace Task.Switch.Structure.FSM
 {
-    public class StateMachine<TState, TParam> where TState : Enum where TParam : class
+    public class StateMachine<TState, TParam>   where TState : Enum 
+                                                where TParam : class
     {
         private enum StateMachineStatus
         {
@@ -26,10 +27,10 @@ namespace Task.Switch.Structure.FSM
 
         public static StateMachine<TState, TParam> Clone(StateMachine<TState, TParam> original, TParam param)
         {
-            StateMachine<TState, TParam> cloned = new StateMachine<TState, TParam>(param);
+            StateMachine<TState, TParam> clone = new StateMachine<TState, TParam>(param);
             foreach (State<TState, TParam> state in original.m_States)
-                cloned.m_States.Add(State<TState, TParam>.Clone(state, cloned));
-            return cloned;
+                clone.m_States.Add(State<TState, TParam>.Clone(state, clone));
+            return clone;
         }
 
         internal TParam GetParameter()
