@@ -13,11 +13,25 @@ namespace Task.Switch.Structure.FSM
         private Action<TParam> m_OnUpdate;
         private Action<TParam> m_OnExit;
 
+
+        internal static State<TState, TParam> Clone(State<TState, TParam> origin, StateMachine<TState, TParam> stateMachine)
+        {
+            State<TState, TParam> cloned = new State<TState, TParam>(origin.Name, stateMachine);
+            cloned.m_OnInitialize = origin.m_OnInitialize;
+            cloned.m_OnEnter = origin.m_OnEnter;
+            cloned.m_OnUpdate = origin.m_OnUpdate;
+            cloned.m_OnExit = origin.m_OnExit;
+            foreach (Translation<TState, TParam> translation in origin.Translations)
+                cloned.Translations.Add(Translation<TState, TParam>.Clone(translation, cloned));
+            return cloned;
+        }
+
         public State(TState name, StateMachine<TState, TParam> stateMachine)
         {
             Name = name;
             m_Machine = stateMachine;
         }
+
         internal TParam GetParameter()
         {
             return m_Machine.GetParameter();

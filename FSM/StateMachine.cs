@@ -14,13 +14,22 @@ namespace Task.Switch.Structure.FSM
             Paused
         }
         public static Action<string> Log;
-        private readonly List<State<TState, TParam>> m_States = new List<State<TState, TParam>>();
+        private readonly List<State<TState, TParam>> m_States;
         private State<TState, TParam> m_CurrentActiveState = null;
         private StateMachineStatus m_Status = StateMachineStatus.Initialized;
         private readonly TParam m_Parameter;
         public StateMachine(TParam param)
         {
             m_Parameter = param;
+            m_States = new List<State<TState, TParam>>();
+        }
+
+        public static StateMachine<TState, TParam> Clone(StateMachine<TState, TParam> original, TParam param)
+        {
+            StateMachine<TState, TParam> cloned = new StateMachine<TState, TParam>(param);
+            foreach (State<TState, TParam> state in original.m_States)
+                cloned.m_States.Add(State<TState, TParam>.Clone(state, cloned));
+            return cloned;
         }
 
         internal TParam GetParameter()
@@ -80,7 +89,7 @@ namespace Task.Switch.Structure.FSM
         }
         private State<TState, TParam> GetState(TState stateName)
         {
-            foreach(State<TState,TParam> state in m_States)
+            foreach (State<TState, TParam> state in m_States)
                 if (Enum.Equals(stateName, state.Name))
                     return state;
             throw new Exception($"{stateName} is not exist! Please call {nameof(NewState)} to create this state");
