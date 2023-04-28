@@ -67,11 +67,12 @@ namespace Task.Switch.Structure.FSM
             m_States.Add(state);
             return state;
         }
+
         public StateMachine<TState, TParam> Any(Func<TParam, bool> valid, Action<TParam> transfer,TState to)
         {
             foreach (State<TState, TParam> state in m_States)
             {
-                if (to.GetHashCode() != state.Name.GetHashCode())
+                if (to.GetHashCode() != state.GetStateInt())
                 {
                     Transition<TState, TParam> transition = new Transition<TState, TParam>(state, valid).Transfer(transfer);
                     transition.To(to);
@@ -80,11 +81,12 @@ namespace Task.Switch.Structure.FSM
             }
             return this;
         }
+
         public StateMachine<TState, TParam> Where(TState from, Func<TParam, bool> valid, Action<TParam> transfer, TState to)
         {
             foreach(State<TState,TParam> state in m_States)
             {
-                if ((from.GetHashCode() & state.GetHashCode()) == state.GetHashCode())
+                if ((from.GetHashCode() & state.GetStateInt()) == state.GetStateInt())
                 {
                     Transition<TState, TParam> transition = new Transition<TState, TParam>(state, valid).Transfer(transfer);
                     transition.To(to);
@@ -103,7 +105,7 @@ namespace Task.Switch.Structure.FSM
         private State<TState, TParam> GetState(TState stateName)
         {
             foreach (State<TState, TParam> state in m_States)
-                if (state.Name.GetHashCode() == stateName.GetHashCode())
+                if (state.GetStateInt() == stateName.GetHashCode())
                     return state;
             throw new Exception($"{stateName} is not exist! Please call {nameof(NewState)} to create this state");
         }

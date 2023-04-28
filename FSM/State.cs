@@ -33,6 +33,8 @@ namespace Task.Switch.Structure.FSM
             m_Machine = stateMachine;
         }
 
+        internal int GetStateInt() { return Name.GetHashCode(); }
+
         internal TParam GetParameter()
         {
             return m_Machine.GetParameter();
