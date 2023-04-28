@@ -1,22 +1,22 @@
 ﻿using System;
 namespace Task.Switch.Structure.FSM
 {
-    public class Translation<TState, TParam>    where TState : Enum 
-                                                where TParam : class
+    public class Transition<TState, TParam> where TState : Enum 
+                                            where TParam : class
     {
         private readonly Func<TParam, bool> m_Valid;
         private Action<TParam> m_Transfer;
         internal TState ToStateName { private set; get; }
         private readonly State<TState, TParam> m_State;
-        public Translation(State<TState, TParam> state, Func<TParam, bool> valid)
+        public Transition(State<TState, TParam> state, Func<TParam, bool> valid)
         {
             m_State = state;
             m_Valid = valid;
         }
 
-        public static Translation<TState, TParam> Clone(Translation<TState, TParam> original, State<TState, TParam> state)
+        public static Transition<TState, TParam> Clone(Transition<TState, TParam> original, State<TState, TParam> state)
         {
-            Translation<TState, TParam> clone = new Translation<TState, TParam>(state, original.m_Valid);
+            Transition<TState, TParam> clone = new Transition<TState, TParam>(state, original.m_Valid);
             clone.m_Transfer = original.m_Transfer;
             clone.ToStateName = original.ToStateName;
             return clone;
@@ -28,14 +28,14 @@ namespace Task.Switch.Structure.FSM
         }
         internal bool OnValid()
         {
-            bool valid = false;
+            bool validity = false;
             if (m_Valid != null)
-                valid = m_Valid(m_State.GetParameter());
+                validity = m_Valid(m_State.GetParameter());
             if (StateMachine<TState, TParam>.Log != null)
-                StateMachine<TState, TParam>.Log($"State:{m_State.Name} {nameof(OnValid)}:{valid} ToState:{ToStateName}");
-            return valid;
+                StateMachine<TState, TParam>.Log($"State:{m_State.Name} {nameof(OnValid)}:{validity} ToState:{ToStateName}");
+            return validity;
         }
-        public Translation<TState, TParam> Transfer(Action<TParam> transfer)
+        public Transition<TState, TParam> Transfer(Action<TParam> transfer)
         {
             m_Transfer = transfer;
             return this;

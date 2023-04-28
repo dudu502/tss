@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Task.Switch.Structure.FSM
 {
@@ -68,15 +67,28 @@ namespace Task.Switch.Structure.FSM
             m_States.Add(state);
             return state;
         }
-        public StateMachine<TState, TParam> Any(TState to, Func<TParam, bool> valid, Action<TParam> transfer = null)
+        public StateMachine<TState, TParam> Any(Func<TParam, bool> valid, Action<TParam> transfer,TState to)
         {
             foreach (State<TState, TParam> state in m_States)
             {
-                if (!Enum.Equals(to, state.Name))
+                if (to.GetHashCode() != state.Name.GetHashCode())
                 {
-                    Translation<TState, TParam> translation = new Translation<TState, TParam>(state, valid).Transfer(transfer);
-                    translation.To(to);
-                    state.Translations.Add(translation);
+                    Transition<TState, TParam> transition = new Transition<TState, TParam>(state, valid).Transfer(transfer);
+                    transition.To(to);
+                    state.Transitions.Add(transition);
+                }
+            }
+            return this;
+        }
+        public StateMachine<TState, TParam> Where(TState from, Func<TParam, bool> valid, Action<TParam> transfer, TState to)
+        {
+            foreach(State<TState,TParam> state in m_States)
+            {
+                if ((from.GetHashCode() & state.GetHashCode()) == state.GetHashCode())
+                {
+                    Transition<TState, TParam> transition = new Transition<TState, TParam>(state, valid).Transfer(transfer);
+                    transition.To(to);
+                    state.Transitions.Add(transition);
                 }
             }
             return this;
@@ -91,7 +103,7 @@ namespace Task.Switch.Structure.FSM
         private State<TState, TParam> GetState(TState stateName)
         {
             foreach (State<TState, TParam> state in m_States)
-                if (Enum.Equals(stateName, state.Name))
+                if (state.Name.GetHashCode() == stateName.GetHashCode())
                     return state;
             throw new Exception($"{stateName} is not exist! Please call {nameof(NewState)} to create this state");
         }
@@ -99,13 +111,13 @@ namespace Task.Switch.Structure.FSM
         {
             if (m_Status == StateMachineStatus.Running && m_CurrentActiveState != null)
             {
-                foreach (Translation<TState, TParam> translation in m_CurrentActiveState.Translations)
+                foreach (Transition<TState, TParam> transition in m_CurrentActiveState.Transitions)
                 {
-                    if (translation.OnValid())
+                    if (transition.OnValid())
                     {
                         m_CurrentActiveState.OnExit();
-                        m_CurrentActiveState = GetState(translation.ToStateName);
-                        translation.OnTransfer();
+                        m_CurrentActiveState = GetState(transition.ToStateName);
+                        transition.OnTransfer();
                         m_CurrentActiveState.OnEnter();
                         return;
                     }

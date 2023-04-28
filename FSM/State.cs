@@ -8,7 +8,7 @@ namespace Task.Switch.Structure.FSM
     {
         internal readonly TState Name;
         readonly StateMachine<TState, TParam> m_Machine;
-        internal readonly List<Translation<TState, TParam>> Translations = new List<Translation<TState, TParam>>();
+        internal readonly List<Transition<TState, TParam>> Transitions = new List<Transition<TState, TParam>>();
         private Action<TParam> m_OnInitialize;
         private Action<TParam> m_OnEnter;
         private Action<TParam> m_OnUpdate;
@@ -22,8 +22,8 @@ namespace Task.Switch.Structure.FSM
             clone.m_OnEnter = original.m_OnEnter;
             clone.m_OnUpdate = original.m_OnUpdate;
             clone.m_OnExit = original.m_OnExit;
-            foreach (Translation<TState, TParam> translation in original.Translations)
-                clone.Translations.Add(Translation<TState, TParam>.Clone(translation, clone));
+            foreach (Transition<TState, TParam> transition in original.Transitions)
+                clone.Transitions.Add(Transition<TState, TParam>.Clone(transition, clone));
             return clone;
         }
 
@@ -41,11 +41,11 @@ namespace Task.Switch.Structure.FSM
         {
             return m_Machine;
         }
-        public Translation<TState, TParam> Translate(Func<TParam, bool> valid)
+        public Transition<TState, TParam> Translate(Func<TParam, bool> valid)
         {
-            Translation<TState, TParam> translation = new Translation<TState, TParam>(this, valid);
-            Translations.Add(translation);
-            return translation;
+            Transition<TState, TParam> transition = new Transition<TState, TParam>(this, valid);
+            Transitions.Add(transition);
+            return transition;
         }
         public State<TState, TParam> Initialize(Action<TParam> init) { m_OnInitialize = init; return this; }
         public State<TState, TParam> Enter(Action<TParam> enter) { m_OnEnter = enter; return this; }
