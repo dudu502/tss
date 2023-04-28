@@ -71,28 +71,16 @@ namespace Task.Switch.Structure.FSM
         public StateMachine<TState, TParam> Any(Func<TParam, bool> valid, Action<TParam> transfer,TState to)
         {
             foreach (State<TState, TParam> state in m_States)
-            {
                 if (to.GetHashCode() != state.GetStateInt())
-                {
-                    Transition<TState, TParam> transition = new Transition<TState, TParam>(state, valid).Transfer(transfer);
-                    transition.To(to);
-                    state.Transitions.Add(transition);
-                }
-            }
+                    state.Translate(valid).Transfer(transfer).To(to);
             return this;
         }
 
         public StateMachine<TState, TParam> Where(TState from, Func<TParam, bool> valid, Action<TParam> transfer, TState to)
         {
             foreach(State<TState,TParam> state in m_States)
-            {
                 if ((from.GetHashCode() & state.GetStateInt()) == state.GetStateInt())
-                {
-                    Transition<TState, TParam> transition = new Transition<TState, TParam>(state, valid).Transfer(transfer);
-                    transition.To(to);
-                    state.Transitions.Add(transition);
-                }
-            }
+                    state.Translate(valid).Transfer(transfer).To(to);
             return this;
         }
         public StateMachine<TState, TParam> Initialize()
