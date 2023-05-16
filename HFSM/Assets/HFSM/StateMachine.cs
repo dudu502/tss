@@ -114,15 +114,6 @@ namespace Task.Switch.Structure.HFSM
             m_CurrentState = m_SubStates[int.MinValue];
         }
 
-        public void Launch()
-        {
-            m_CurrentState = m_SubStates[int.MaxValue];
-        }
-        public void Terminate()
-        {
-            m_CurrentState = m_SubStates[int.MinValue];
-        }
-
         public void Tick()
         {
             if (m_CurrentState != null && !m_CurrentState.IsEnd() && m_Transitions.ContainsKey(m_CurrentState.Id))
