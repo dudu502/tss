@@ -65,7 +65,7 @@ namespace Task.Switch.Structure.HFSM
         }
         public StateMachineBuilder<TStateObject> Build()
         {
-            m_Machine.Initialize();      
+            m_Machine.OnInitialize(m_Machine.GetStateObject());   
             return m_BuilderStack.Pop();
         }
         public StateMachineBuilder<TStateObject> SetDefault(int id)

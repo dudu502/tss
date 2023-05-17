@@ -5,7 +5,7 @@ namespace Task.Switch.Structure.HFSM
 {
     public class StateMachineLogger
     {
-        public static Action<string> LogInfo = Console.WriteLine;
+        public static Action<string> LogInfo;
     }
     public class StateMachine<TStateObject> : State<TStateObject>
     {
@@ -40,14 +40,6 @@ namespace Task.Switch.Structure.HFSM
                     m_Builder.InitializeBuilderStack();
                 }
                 return m_Builder; 
-            }
-        }
-
-        public void Initialize()
-        {
-            foreach(State<TStateObject> state in m_SubStates.Values)
-            {
-                state.OnInitialize(m_StateObject);
             }
         }
 
@@ -94,6 +86,9 @@ namespace Task.Switch.Structure.HFSM
         internal override void OnInitialize(TStateObject stateObject)
         {
             base.OnInitialize(stateObject);
+            foreach (State<TStateObject> state in m_SubStates.Values)
+                if(state.GetType() != typeof(StateMachine<TStateObject>)) 
+                    state.OnInitialize(m_StateObject);
         }
 
         internal override void OnEnter(TStateObject stateObject)
@@ -105,7 +100,7 @@ namespace Task.Switch.Structure.HFSM
         internal override void OnUpdate(TStateObject stateObject)
         {
             base.OnUpdate(stateObject);
-            Tick();
+            Update();
         }
 
         internal override void OnExit(TStateObject stateObject)
@@ -114,7 +109,7 @@ namespace Task.Switch.Structure.HFSM
             m_CurrentState = m_SubStates[int.MinValue];
         }
 
-        public void Tick()
+        public void Update()
         {
             if (m_CurrentState != null && !m_CurrentState.IsEnd() && m_Transitions.ContainsKey(m_CurrentState.Id))
             {

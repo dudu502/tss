@@ -7,19 +7,19 @@ using UnityEngine.UI;
 
 public class StateObject
 {
-    public const int DEFAULT = 0;
+    public const int DEFAULT = 10;
     public const int DAY_STATE = 1;
     public const int NIGHT_STATE = 2;
 
-    public const int EATING = 1;
-    public const int WORKING = 2;
-    public const int TALKING = 3;
+    public const int EATING = 3;
+    public const int WORKING = 4;
+    public const int TALKING = 5;
 
-    public const int EXCITING = 4;
-    public const int IDLE = 5;
+    public const int EXCITING = 6;
+    public const int IDLE = 7;
 
-    public const int SLEEPING = 1;
-    public const int DREAMING = 2;
+    public const int SLEEPING = 8;
+    public const int DREAMING = 9;
 
     public const int MAX_TIME = 60*60*24;
 
@@ -47,12 +47,10 @@ public class StateObject
     public void TimePass()
     {
         timestamp += 20;
-        timestamp %= MAX_TIME;
-    }
-    public void ShowTime()
-    {
+        timestamp %= MAX_TIME; 
         infoText.text = TimeString();
     }
+
     public void ShowPlayerInfo(string value,float progress)
     {
         player.SetInfo(value, 1-progress);
@@ -79,49 +77,51 @@ public class MainScene : MonoBehaviour
     [SerializeField] Color nightColor;
     [SerializeField] Player player;
     [SerializeField] Image backgroundImage;
-
     [SerializeField] TMPro.TMP_Text infoText;
-
     StateMachine<StateObject> stateMachine;
 
     void Start()
     {
+        //StateMachineLogger.LogInfo = Debug.LogError;
         stateMachine = new StateMachine<StateObject>(new StateObject(player, backgroundImage, infoText));
         stateMachine
             .Builder
-                .NewStateMachine(StateObject.DEFAULT)
+                .NewState(StateObject.DEFAULT)
+                    .Initialize(so => { })
                     .Translate(so => so.IsDay()).To(StateObject.DAY_STATE)
                     .Translate(so => so.IsNight()).To(StateObject.NIGHT_STATE)
                 .End()
                 .NewStateMachine(StateObject.DAY_STATE)
+                    .Initialize(so => { })
                     .Enter(so => so.background.color = dayColor)
-                    .Update(so =>
-                    {
-                        so.TimePass();
-                        so.ShowTime();
-                    })
+                    .Update(so => so.TimePass())
                     .Translate(so => so.IsNight()).To(StateObject.NIGHT_STATE)
                     .Builder
                         .NewState(StateObject.IDLE)
+                            .Initialize(so => { })
                             .Update(so => so.ShowPlayerInfo("idle", 1))
                             .Translate(so => true).To(StateObject.EATING)
                         .End()
                         .NewState(StateObject.EATING)
+                            .Initialize(so => { })
                             .Enter(so => so.timer.Reset())
                             .Update(so => so.ShowPlayerInfo("eating", so.timer / StateObject.EATING_SECS))
                             .Translate(so => so.timer > StateObject.EATING_SECS).To(StateObject.TALKING)
                         .End()
                         .NewState(StateObject.TALKING)
+                            .Initialize(so => { })
                             .Enter(so => so.timer.Reset())
                             .Update(so => so.ShowPlayerInfo("talking", so.timer / StateObject.TALKING_SECS))
                             .Translate(so => so.timer > StateObject.TALKING_SECS).To(StateObject.WORKING)
                         .End()
                         .NewState(StateObject.WORKING)
+                            .Initialize(so => { })
                             .Enter(so => so.timer.Reset())
                             .Update(so => so.ShowPlayerInfo("working", so.timer / StateObject.WORKING_SECS))
                             .Translate(so => so.timer > StateObject.WORKING_SECS).To(StateObject.EXCITING)
                         .End()
                         .NewState(StateObject.EXCITING)
+                            .Initialize(so => { })
                             .Enter(so => so.timer.Reset())
                             .Update(so => so.ShowPlayerInfo("exciting", so.timer / StateObject.EXCITING_SECS))
                             .Translate(so => so.timer > StateObject.EXCITING_SECS).To(StateObject.IDLE)
@@ -129,20 +129,19 @@ public class MainScene : MonoBehaviour
                     .SetDefault(StateObject.IDLE).Build()
                 .End()
                 .NewStateMachine(StateObject.NIGHT_STATE)
+                    .Initialize(so => { })
                     .Enter(so => so.background.color = nightColor)
-                    .Update(so =>
-                    {
-                        so.TimePass();
-                        so.ShowTime();
-                    })
+                    .Update(so => so.TimePass())
                     .Translate(so => so.IsDay()).To(StateObject.DAY_STATE)
                     .Builder
                         .NewState(StateObject.SLEEPING)
+                            .Initialize(so => { })
                             .Enter(so => so.timer.Reset())
                             .Update(so => so.ShowPlayerInfo("sleeping", so.timer / StateObject.SLEEPING_SECS))
                             .Translate(so => so.timer > StateObject.SLEEPING_SECS).To(StateObject.DREAMING)
                         .End()
                         .NewState(StateObject.DREAMING)
+                            .Initialize(so => { })
                             .Enter(so => so.timer.Reset())
                             .Update(so => so.ShowPlayerInfo("dreaming", so.timer / StateObject.DREAMING_SECS))
                             .Translate(so => so.timer > StateObject.DREAMING_SECS).To(StateObject.SLEEPING)
@@ -152,10 +151,8 @@ public class MainScene : MonoBehaviour
                 .SetDefault(StateObject.DEFAULT).Build();
     }
 
-    // Update is called once per frame
     void Update()
     {
-        stateMachine.Tick();
+        stateMachine.Update();
     }
-
 }
