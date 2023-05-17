@@ -43,7 +43,7 @@ namespace Task.Switch.Structure.FSM
         {
             return m_Machine;
         }
-        public Transition<TState, TParam> Translate(Func<TParam, bool> valid)
+        public Transition<TState, TParam> When(Func<TParam, bool> valid)
         {
             Transition<TState, TParam> transition = new Transition<TState, TParam>(this, valid);
             Transitions.Add(transition);

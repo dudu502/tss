@@ -98,7 +98,7 @@ namespace Task.Switch.Structure.HFSM
             return this;
         }
 
-        public StateMachineBuilder<TStateObject> Translate(Func<TStateObject,bool> valid)
+        public StateMachineBuilder<TStateObject> When(Func<TStateObject,bool> valid)
         {
             if(m_DeclarativeStack.TryPeek(out IDeclarative<TStateObject> state))
             {

@@ -37,7 +37,7 @@ namespace Task.Switch.Structure.FSM
                         so.physical_strength++;
                         so.Log();
                     })
-                    .Translate((so) => so.physical_strength >= StateObject.MAX_PHYSICAL_STRENGTH).To(State.Run)
+                    .When((so) => so.physical_strength >= StateObject.MAX_PHYSICAL_STRENGTH).To(State.Run)
                     .Exit((so) => { })
                 .End()
                 .NewState(State.Run)
@@ -48,7 +48,7 @@ namespace Task.Switch.Structure.FSM
                         so.physical_strength--;
                         so.Log();
                     })
-                    .Translate((so) => so.physical_strength <= 0).To(State.Idle)
+                    .When((so) => so.physical_strength <= 0).To(State.Idle)
                     .Exit((so) => { })
                 .End()
                 .Initialize().Start(State.Idle);
