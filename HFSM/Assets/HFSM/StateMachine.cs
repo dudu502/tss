@@ -43,6 +43,11 @@ namespace Task.Switch.Structure.HFSM
             }
         }
 
+        public int StateCount => m_SubStates.Count;
+        public State<TStateObject> GetStateAt(int index)
+        {
+            return m_SubStates[index];
+        }
         public TStateObject GetStateObject() { return m_StateObject; }
 
         public StateMachine(int stateId):base(stateId)
@@ -55,13 +60,13 @@ namespace Task.Switch.Structure.HFSM
         public StateMachine<TStateObject> SetDefault(int stateId)
         {
             m_DefaultTransitionToStateId = stateId;
-            AddTransition(int.MaxValue, stateId, so => true, null);
+            AddTransition(int.MaxValue, stateId, so => true);
             return this;
         }
 
-        public void AddTransition(int fromId,int toId, Func<TStateObject, bool> valid, Action<TStateObject> transfer)
+        public void AddTransition(int fromId,int toId, Func<TStateObject, bool> valid)
         {
-            Transition<TStateObject> transition = new Transition<TStateObject>(fromId,toId,valid,transfer);
+            Transition<TStateObject> transition = new Transition<TStateObject>(fromId,toId,valid);
             AddTransition(transition);
         }
 
@@ -119,7 +124,6 @@ namespace Task.Switch.Structure.HFSM
                     {
                         m_CurrentState.OnExit(m_StateObject);
                         m_CurrentState = m_SubStates[transition.ToId];
-                        transition.OnTransfer(m_StateObject);
                         m_CurrentState.OnEnter(m_StateObject);
                         return;
                     }

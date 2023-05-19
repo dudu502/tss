@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Task.Switch.Structure.HFSM
 {
@@ -14,7 +11,6 @@ namespace Task.Switch.Structure.HFSM
         State<TStateObject> Exit(Action<TStateObject> exit);
         
         Transition<TStateObject> Translate(Func<TStateObject,bool> valid);
-        Transition<TStateObject> Transfer(Action<TStateObject> transfer);
         Transition<TStateObject> To(int id);
         public int Id { set; get; }
     }
@@ -29,11 +25,13 @@ namespace Task.Switch.Structure.HFSM
             m_DeclarativeStack = new Stack<IDeclarative<TStateObject>>();
             m_Machine = machine;
         }
+
         public void InitializeBuilderStack()
         {
             m_BuilderStack = new Stack<StateMachineBuilder<TStateObject>>();
             m_BuilderStack.Push(this);
         }
+
         public StateMachineBuilder<TStateObject> NewState(int id)
         {
             State<TStateObject> state = new State<TStateObject>(id);
@@ -41,6 +39,7 @@ namespace Task.Switch.Structure.HFSM
             m_DeclarativeStack.Push(state);
             return this;
         }
+
         public StateMachineBuilder<TStateObject> NewStateMachine(int id)
         {
             StateMachine<TStateObject> machine = new StateMachine<TStateObject>(id);
@@ -63,34 +62,40 @@ namespace Task.Switch.Structure.HFSM
                 return this;
             }
         }
+
         public StateMachineBuilder<TStateObject> Build()
         {
             m_Machine.OnInitialize(m_Machine.GetStateObject());   
             return m_BuilderStack.Pop();
         }
+
         public StateMachineBuilder<TStateObject> SetDefault(int id)
         {
             m_Machine.SetDefault(id);
             return this;
         }
+
         public StateMachineBuilder<TStateObject> Initialize(Action<TStateObject> init)
         {
             if(m_DeclarativeStack.TryPeek(out IDeclarative<TStateObject> state))
                 state.Initialize(init);
             return this;
         }
+
         public StateMachineBuilder<TStateObject> Enter(Action<TStateObject> enter)
         {
             if (m_DeclarativeStack.TryPeek(out IDeclarative<TStateObject> state))
                 state.Enter(enter);
             return this;
         }
+
         public StateMachineBuilder<TStateObject> Update(Action<TStateObject> update)
         {
             if (m_DeclarativeStack.TryPeek(out IDeclarative<TStateObject> state))
                 state.Update(update);
             return this;
         }
+
         public StateMachineBuilder<TStateObject> Exit(Action<TStateObject> exit)
         {
             if (m_DeclarativeStack.TryPeek(out IDeclarative<TStateObject> state))
@@ -102,31 +107,50 @@ namespace Task.Switch.Structure.HFSM
         {
             if(m_DeclarativeStack.TryPeek(out IDeclarative<TStateObject> state))
             {
-                Transition<TStateObject> transition = new Transition<TStateObject>(state.Id,0,valid);
+                Transition<TStateObject> transition = new Transition<TStateObject>(state.Id,int.MinValue,valid);
                 m_Machine.AddTransition(transition);
                 m_DeclarativeStack.Push(transition);
             }
             return this;
         }
 
-        public StateMachineBuilder<TStateObject> Transfer(Action<TStateObject> transfer)
+        public StateMachineBuilder<TStateObject> Any(Func<TStateObject,bool> valid)
         {
-            if (m_DeclarativeStack.TryPeek(out IDeclarative<TStateObject> transition))
+            for(int i = 0; i < m_Machine.StateCount; ++i)
             {
-                transition.Transfer(transfer);
+                Transition<TStateObject> transition = new Transition<TStateObject>(m_Machine.GetStateAt(i).Id,int.MinValue,valid);
+                m_Machine.AddTransition(transition);
+                m_DeclarativeStack.Push(transition);
+            }
+            return this;
+        }
+
+        public StateMachineBuilder<TStateObject> Where(int fromId, Func<TStateObject, bool> valid)
+        {
+            for (int i = 0; i < m_Machine.StateCount; ++i)
+            {
+                int stateId = m_Machine.GetStateAt(i).Id;
+                if((fromId & stateId) == stateId)
+                {
+                    Transition<TStateObject> transition = new Transition<TStateObject>(m_Machine.GetStateAt(i).Id, int.MinValue, valid);
+                    m_Machine.AddTransition(transition);
+                    m_DeclarativeStack.Push(transition);
+                }              
             }
             return this;
         }
 
         public StateMachineBuilder<TStateObject> To(int id)
         {
-            if (m_DeclarativeStack.TryPeek(out IDeclarative<TStateObject> transition))
+            while (m_DeclarativeStack.TryPeek(out IDeclarative<TStateObject> transition) && transition.GetType() == typeof(Transition<TStateObject>))
             {
-                transition.To(id);
+                if(id != transition.Id)
+                    transition.To(id);
                 m_DeclarativeStack.Pop();
             }
             return this;
         }
+
         public StateMachineBuilder<TStateObject> End()
         {
             m_DeclarativeStack.Pop();

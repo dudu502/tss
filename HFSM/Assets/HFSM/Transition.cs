@@ -1,28 +1,21 @@
 ﻿using System;
+
 namespace Task.Switch.Structure.HFSM
 {
     public class Transition<TStateObject> : IDeclarative<TStateObject>
     {
         private Func<TStateObject, bool> m_Valid;
-        private Action<TStateObject> m_Transfer;
-        
+
         public int Id { set; get; }
         internal int ToId;
 
-        public Transition(int fromId,int toId, Func<TStateObject, bool> valid, Action<TStateObject> transfer = null)
+        public Transition(int fromId,int toId, Func<TStateObject, bool> valid)
         {
             Id = fromId;
             ToId = toId;
             m_Valid = valid;
-            m_Transfer = transfer;
         }
-
-        public Transition(int fromId)
-        {
-            Id = fromId;
-        }
-
-     
+        
         internal bool OnValid(TStateObject stateObject)
         {
             bool validity = false;
@@ -32,23 +25,9 @@ namespace Task.Switch.Structure.HFSM
             return validity;
         }
       
-        internal void OnTransfer(TStateObject stateObject)
-        {
-            if (m_Transfer != null)           
-            {
-                StateMachineLogger.LogInfo?.Invoke($"From:{Id} To:{ToId} OnTransfer");
-                m_Transfer(stateObject);
-            }
-        }
         public Transition<TStateObject> Translate(Func<TStateObject,bool> valid)
         {
             m_Valid = valid;
-            return this;
-        }
-
-        public Transition<TStateObject> Transfer(Action<TStateObject> transfer)
-        {
-            m_Transfer = transfer;
             return this;
         }
 
