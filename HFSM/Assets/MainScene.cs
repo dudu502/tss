@@ -82,7 +82,7 @@ public class MainScene : MonoBehaviour
 
     void Start()
     {
-        //StateMachineLogger.LogInfo = Debug.LogError;
+        StateMachineLogger.LogInfo = Debug.LogError;
         stateMachine = new StateMachine<StateObject>(new StateObject(player, backgroundImage, infoText));
         stateMachine
             .Builder

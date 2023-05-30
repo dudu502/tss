@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Task.Switch.Structure.HFSM
 {
-    public class State<TStateObject> : IDeclarative<TStateObject>
+    public class State<TStateObject>
     {
         private Action<TStateObject> m_OnInitialize;
         private Action<TStateObject> m_OnEnter;
@@ -14,11 +14,6 @@ namespace Task.Switch.Structure.HFSM
         public State(int id)
         {
             Id = id;
-
-        }
-        public State()
-        {
-            Id = 0;
         }
 
         public State<TStateObject> Initialize(Action<TStateObject> init) { m_OnInitialize = init; return this; }
@@ -26,26 +21,16 @@ namespace Task.Switch.Structure.HFSM
         public State<TStateObject> Update(Action<TStateObject> update) { m_OnUpdate = update; return this; }
         public State<TStateObject> Exit(Action<TStateObject> exit) { m_OnExit = exit; return this; }
 
-        public Transition<TStateObject> Translate(Func<TStateObject, bool> valid)
-        {
-            throw new Exception($"{nameof(State<TStateObject>)} {nameof(Translate)} is Not Available");
-        }
-        public Transition<TStateObject> Transfer(Action<TStateObject> transfer)
-        {
-            throw new Exception($"{nameof(State<TStateObject>)} {nameof(Transfer)} is Not Available");
-        }
-        public Transition<TStateObject> To(int id)
-        {
-            throw new Exception($"{nameof(State<TStateObject>)} {nameof(To)} is Not Available");
-        }
         internal bool IsEnd()
         {
             return Id == int.MinValue;
         }
+
         internal bool IsEntry()
         {
             return Id == int.MaxValue;
         }
+
         internal virtual void OnInitialize(TStateObject stateObject)
         {
             if (m_OnInitialize != null)
@@ -54,6 +39,7 @@ namespace Task.Switch.Structure.HFSM
                 m_OnInitialize(stateObject);
             }
         }
+
         internal virtual void OnEnter(TStateObject stateObject)
         {
             if (m_OnEnter != null)
@@ -71,6 +57,7 @@ namespace Task.Switch.Structure.HFSM
                 m_OnUpdate(stateObject);
             }
         }
+
         internal virtual void OnExit(TStateObject stateObject)
         {
             if (m_OnExit != null)

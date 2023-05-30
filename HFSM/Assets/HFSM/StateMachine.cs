@@ -19,12 +19,16 @@ namespace Task.Switch.Structure.HFSM
 
         private readonly Dictionary<int,List<Transition<TStateObject>>> m_Transitions = new Dictionary<int, List<Transition<TStateObject>>>();
 
-        private int m_DefaultTransitionToStateId;
-
-        public StateMachine(TStateObject so)
+        public StateMachine(TStateObject so) : base(0)
         {
             m_StateObject = so;
-     
+            AddState(new State<TStateObject>(int.MaxValue));
+            AddState(new State<TStateObject>(int.MinValue));
+            m_CurrentState = m_SubStates[int.MaxValue];
+        }
+
+        public StateMachine(int stateId) : base(stateId)
+        {
             AddState(new State<TStateObject>(int.MaxValue));
             AddState(new State<TStateObject>(int.MinValue));
             m_CurrentState = m_SubStates[int.MaxValue];
@@ -43,23 +47,12 @@ namespace Task.Switch.Structure.HFSM
             }
         }
 
-        public int StateCount => m_SubStates.Count;
-        public State<TStateObject> GetStateAt(int index)
-        {
-            return m_SubStates[index];
-        }
         public TStateObject GetStateObject() { return m_StateObject; }
 
-        public StateMachine(int stateId):base(stateId)
-        {
-            AddState(new State<TStateObject>(int.MaxValue));
-            AddState(new State<TStateObject>(int.MinValue));
-            m_CurrentState = m_SubStates[int.MaxValue];
-        }
+        internal Dictionary<int,State<TStateObject>> GetSubStates() { return m_SubStates; }
 
         public StateMachine<TStateObject> SetDefault(int stateId)
         {
-            m_DefaultTransitionToStateId = stateId;
             AddTransition(int.MaxValue, stateId, so => true);
             return this;
         }
