@@ -9,7 +9,7 @@ namespace Task.Switch.Structure.HFSM
 	/// </summary>
 	public class Timer
 	{
-		public float startTime;
+		private float startTime;
 		public float Elapsed => Time.time - startTime;
 
 		public Timer()

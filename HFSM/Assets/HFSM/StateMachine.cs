@@ -39,10 +39,7 @@ namespace Task.Switch.Structure.HFSM
             get 
             {
                 if (m_Builder == null)
-                {
                     m_Builder = new StateMachineBuilder<TStateObject>(this);
-                    m_Builder.InitializeBuilderStack();
-                }
                 return m_Builder; 
             }
         }

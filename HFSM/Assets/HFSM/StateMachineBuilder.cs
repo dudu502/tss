@@ -12,10 +12,7 @@ namespace Task.Switch.Structure.HFSM
         {
             m_DeclarativeStack = new Stack<object>();
             m_Machine = machine;
-        }
 
-        public void InitializeBuilderStack()
-        {
             m_BuilderStack = new Stack<StateMachineBuilder<TStateObject>>();
             m_BuilderStack.Push(this);
         }

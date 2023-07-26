@@ -5,8 +5,7 @@ namespace Task.Switch.Structure.HFSM
     public class Transition<TStateObject>
     {
         private Func<TStateObject, bool> m_Valid;
-
-        public int Id { set; get; }
+        public int Id { private set; get; }
         internal int ToId;
 
         public Transition(int fromId,int toId, Func<TStateObject, bool> valid)

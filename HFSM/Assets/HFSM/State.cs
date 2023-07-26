@@ -9,7 +9,7 @@ namespace Task.Switch.Structure.HFSM
         private Action<TStateObject> m_OnEnter;
         private Action<TStateObject> m_OnUpdate;
         private Action<TStateObject> m_OnExit;
-        public int Id { set; get; }
+        public int Id { private set; get; }
 
         public State(int id)
         {
