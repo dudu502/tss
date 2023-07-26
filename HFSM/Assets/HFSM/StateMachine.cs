@@ -54,25 +54,25 @@ namespace Task.Switch.Structure.HFSM
             return this;
         }
 
-        public void AddTransition(int fromId,int toId, Func<TStateObject, bool> valid)
+        internal void AddTransition(int fromId,int toId, Func<TStateObject, bool> valid)
         {
             Transition<TStateObject> transition = new Transition<TStateObject>(fromId,toId,valid);
             AddTransition(transition);
         }
 
-        public void AddTransition(Transition<TStateObject> transition)
+        internal void AddTransition(Transition<TStateObject> transition)
         {
             if (!m_Transitions.ContainsKey(transition.Id))
                 m_Transitions.Add(transition.Id, new List<Transition<TStateObject>>());
             m_Transitions[transition.Id].Add(transition);
         }
 
-        public void AddState(State<TStateObject> state)
+        internal void AddState(State<TStateObject> state)
         {   
             m_SubStates.Add(state.Id,state);
         }
 
-        public void AddState(StateMachine<TStateObject> state)
+        internal void AddState(StateMachine<TStateObject> state)
         {
             state.m_StateObject = m_StateObject;
             m_SubStates.Add(state.Id, state);
