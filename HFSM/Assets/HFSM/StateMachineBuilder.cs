@@ -3,7 +3,29 @@ using System.Collections.Generic;
 
 namespace Task.Switch.Structure.HFSM
 {  
-    public class StateMachineBuilder<TStateObject>
+    public interface IStateDeclarable<TStateObject>
+    {
+        IStateDeclarable<TStateObject> Initialize(Action<TStateObject> init);
+        IStateDeclarable<TStateObject> Enter(Action<TStateObject> enter);
+        IStateDeclarable<TStateObject> Update(Action<TStateObject> update);
+        IStateDeclarable<TStateObject> Exit(Action<TStateObject> exit);
+        ITransitionDeclarable<TStateObject> When(Func<TStateObject, bool> valid);
+    }
+    public interface IStateMachineDeclarable<TStateObject>: IStateDeclarable<TStateObject>
+    {
+        StateMachineBuilder<TStateObject> Builder { get; }
+        IStateMachineDeclarable<TStateObject> SetDefault(int state);
+        StateMachineBuilder<TStateObject> Build();
+
+    }
+    public interface ITransitionDeclarable<TStateObject>
+    {
+        StateMachineBuilder<TStateObject> To(int state);
+    }
+
+    public class StateMachineBuilder<TStateObject>:IStateDeclarable<TStateObject>,
+        ITransitionDeclarable<TStateObject>,
+        IStateMachineDeclarable<TStateObject>
     {
         private Stack<StateMachineBuilder<TStateObject>> m_BuilderStack;
         private Stack<object> m_DeclarativeStack;
@@ -17,7 +39,7 @@ namespace Task.Switch.Structure.HFSM
             m_BuilderStack.Push(this);
         }
 
-        public StateMachineBuilder<TStateObject> NewState(int id)
+        public IStateDeclarable<TStateObject> NewState(int id)
         {
             State<TStateObject> state = new State<TStateObject>(id);
             m_Machine.AddState(state);
@@ -25,7 +47,7 @@ namespace Task.Switch.Structure.HFSM
             return this;
         }
 
-        public StateMachineBuilder<TStateObject> NewStateMachine(int id)
+        public IStateMachineDeclarable<TStateObject> NewStateMachine(int id)
         {
             StateMachine<TStateObject> machine = new StateMachine<TStateObject>(id);
             m_Machine.AddState(machine);
@@ -54,41 +76,41 @@ namespace Task.Switch.Structure.HFSM
             return m_BuilderStack.Pop();
         }
 
-        public StateMachineBuilder<TStateObject> SetDefault(int id)
+        public IStateMachineDeclarable<TStateObject> SetDefault(int id)
         {
             m_Machine.SetDefault(id);
             return this;
         }
 
-        public StateMachineBuilder<TStateObject> Initialize(Action<TStateObject> init)
+        public IStateDeclarable<TStateObject> Initialize(Action<TStateObject> init)
         {
             if(m_DeclarativeStack.TryPeek(out var state))
                 ((State<TStateObject>)state).Initialize(init);
             return this;
         }
 
-        public StateMachineBuilder<TStateObject> Enter(Action<TStateObject> enter)
+        public IStateDeclarable<TStateObject> Enter(Action<TStateObject> enter)
         {
             if (m_DeclarativeStack.TryPeek(out var state))
                 ((State<TStateObject>)state).Enter(enter);
             return this;
         }
 
-        public StateMachineBuilder<TStateObject> Update(Action<TStateObject> update)
+        public IStateDeclarable<TStateObject> Update(Action<TStateObject> update)
         {
             if (m_DeclarativeStack.TryPeek(out var state))
                 ((State<TStateObject>)state).Update(update);
             return this;
         }
 
-        public StateMachineBuilder<TStateObject> Exit(Action<TStateObject> exit)
+        public IStateDeclarable<TStateObject> Exit(Action<TStateObject> exit)
         {
             if (m_DeclarativeStack.TryPeek(out var state))
                 ((State<TStateObject>)state).Exit(exit);
             return this;
         }
 
-        public StateMachineBuilder<TStateObject> When(Func<TStateObject,bool> valid)
+        public ITransitionDeclarable<TStateObject> When(Func<TStateObject,bool> valid)
         {
             if(m_DeclarativeStack.TryPeek(out var state))
             {
