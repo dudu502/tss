@@ -1,10 +1,18 @@
-﻿using System;
+﻿/*
+ * File: State.cs
+ *
+ * Copyright(c) 2023 Lenovo, Inc. and/or its subsidiaries. All rights reserved.
+ *
+ * Confidential and Proprietary
+ *
+ */
+
+using System;
 using System.Collections.Generic;
 
 namespace Task.Switch.Structure.FSM
 {
-    public class State<TState, TParam>  where TState : Enum 
-                                        where TParam : class
+    public class State<TState, TParam> where TState : Enum where TParam : class
     {
         internal readonly TState Name;
         readonly StateMachine<TState, TParam> m_Machine;
@@ -15,15 +23,17 @@ namespace Task.Switch.Structure.FSM
         private Action<TParam> m_OnExit;
 
 
-        internal static State<TState, TParam> Clone(State<TState, TParam> original, StateMachine<TState, TParam> stateMachine)
+        internal static State<TState,TParam> Clone(State<TState,TParam> origin, StateMachine<TState,TParam> stateMachine)
         {
-            State<TState, TParam> clone = new State<TState, TParam>(original.Name, stateMachine);
-            clone.m_OnInitialize = original.m_OnInitialize;
-            clone.m_OnEnter = original.m_OnEnter;
-            clone.m_OnUpdate = original.m_OnUpdate;
-            clone.m_OnExit = original.m_OnExit;
-            foreach (Transition<TState, TParam> transition in original.Transitions)
-                clone.Transitions.Add(Transition<TState, TParam>.Clone(transition, clone));
+            State<TState, TParam> clone = new State<TState, TParam>(origin.Name, stateMachine);
+            clone.m_OnInitialize = origin.m_OnInitialize;
+            clone.m_OnEnter = origin.m_OnEnter;
+            clone.m_OnUpdate= origin.m_OnUpdate;
+            clone.m_OnExit = origin.m_OnExit;
+
+            foreach(Transition<TState,TParam> transition in origin.Transitions)
+                clone.Transitions.Add(Transition<TState, TParam>.Clone(transition,clone));
+
             return clone;
         }
 
@@ -32,8 +42,6 @@ namespace Task.Switch.Structure.FSM
             Name = name;
             m_Machine = stateMachine;
         }
-
-        internal int GetStateInt() { return Name.GetHashCode(); }
 
         internal TParam GetParameter()
         {

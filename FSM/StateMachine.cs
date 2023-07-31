@@ -1,10 +1,19 @@
-﻿using System;
+﻿/*
+ * File: StateMachine.cs
+ *
+ * Copyright(c) 2023 Lenovo, Inc. and/or its subsidiaries. All rights reserved.
+ *
+ * Confidential and Proprietary
+ *
+ */
+
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Task.Switch.Structure.FSM
 {
-    public class StateMachine<TState, TParam>   where TState : Enum 
-                                                where TParam : class
+    public class StateMachine<TState, TParam> where TState : Enum where TParam : class
     {
         private enum StateMachineStatus
         {
@@ -16,15 +25,15 @@ namespace Task.Switch.Structure.FSM
         public static Action<string> Log;
         private readonly List<State<TState, TParam>> m_States;
         private State<TState, TParam> m_CurrentActiveState = null;
-        private StateMachineStatus m_Status = StateMachineStatus.Initialized;
+        private StateMachineStatus m_Status = StateMachineStatus.NotInitialized;
         private readonly TParam m_Parameter;
         public StateMachine(TParam param)
         {
             m_Parameter = param;
-            m_States = new List<State<TState, TParam>>();
+            m_States = new List<State<TState,TParam>>();
         }
 
-        public static StateMachine<TState, TParam> Clone(StateMachine<TState, TParam> original, TParam param)
+        public static StateMachine<TState, TParam> Clone(StateMachine<TState,TParam> original, TParam param) 
         {
             StateMachine<TState, TParam> clone = new StateMachine<TState, TParam>(param);
             foreach (State<TState, TParam> state in original.m_States)
@@ -67,20 +76,30 @@ namespace Task.Switch.Structure.FSM
             m_States.Add(state);
             return state;
         }
-
-        public StateMachine<TState, TParam> Any(Func<TParam, bool> valid, Action<TParam> transfer,TState to)
+        public StateMachine<TState, TParam> Any(TState to, Func<TParam, bool> valid, Action<TParam> transfer = null)
         {
             foreach (State<TState, TParam> state in m_States)
-                if (to.GetHashCode() != state.GetStateInt())
-                    state.Translate(valid).Transfer(transfer).To(to);
+            {
+                if (!Enum.Equals(to, state.Name))
+                {
+                    Transition<TState, TParam> transition = new Transition<TState, TParam>(state, valid).Transfer(transfer);
+                    transition.To(to);
+                    state.Transitions.Add(transition);
+                }
+            }
             return this;
         }
-
-        public StateMachine<TState, TParam> Where(TState from, Func<TParam, bool> valid, Action<TParam> transfer, TState to)
+        public StateMachine<TState, TParam> Where(TState from, TState to, Func<TParam, bool> valid, Action<TParam> transfer = null)
         {
-            foreach(State<TState,TParam> state in m_States)
-                if ((from.GetHashCode() & state.GetStateInt()) == state.GetStateInt())
-                    state.Translate(valid).Transfer(transfer).To(to);
+            foreach (State<TState, TParam> state in m_States)
+            {
+                if ((from.GetHashCode() & state.Name.GetHashCode()) == state.Name.GetHashCode())
+                {
+                    Transition<TState, TParam> transition = new Transition<TState, TParam>(state, valid).Transfer(transfer);
+                    transition.To(to);
+                    state.Transitions.Add(transition);
+                }
+            }
             return this;
         }
         public StateMachine<TState, TParam> Initialize()
@@ -92,8 +111,8 @@ namespace Task.Switch.Structure.FSM
         }
         private State<TState, TParam> GetState(TState stateName)
         {
-            foreach (State<TState, TParam> state in m_States)
-                if (state.GetStateInt() == stateName.GetHashCode())
+            foreach(State<TState,TParam> state in m_States)
+                if (Enum.Equals(stateName, state.Name))
                     return state;
             throw new Exception($"{stateName} is not exist! Please call {nameof(NewState)} to create this state");
         }
