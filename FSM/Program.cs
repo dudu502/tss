@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 
 namespace Task.Switch.Structure.FSM
@@ -21,38 +22,38 @@ namespace Task.Switch.Structure.FSM
             {
                 Console.WriteLine("Current physical_strength " + physical_strength);
             }
+            public void Log(string value)
+            {
+                Console.WriteLine(value);
+            }
         }
 
         static void Main(string[] args)
         {
             // Create a state machine
-            StateMachine<State, StateObject>.Log = Console.WriteLine;
-            var machine = new StateMachine<State, StateObject>(new StateObject());
-            machine
-                .NewState(State.Idle)
-                    .Initialize((so) => { })
-                    .Enter((so) => { })
-                    .Update((so) =>
-                    {
-                        so.physical_strength++;
-                        so.Log();
-                    })
-                    .When((so) => so.physical_strength >= StateObject.MAX_PHYSICAL_STRENGTH).To(State.Run)
-                    .Exit((so) => { })
+            IStateMachine<StateObject> machine = new StateMachine<StateObject>(new StateObject())        
+                .State(State.Idle)
+                    .Initialize(so => so.Log("Init Idle"))
+                    .Enter(so=>so.Log("Enter Idle"))
+                    .Update(so => { so.physical_strength++; so.Log(); })
+                    .Exit(so=>so.Log("Exit Idle"))
+                    .Transition(so=>so.physical_strength>=StateObject.MAX_PHYSICAL_STRENGTH)
+                        .Transfer(so=>so.Log("Transfer Idle"))
+                        .To(State.Run)
+                    .End()
                 .End()
-                .NewState(State.Run)
-                    .Initialize((so) => { })
-                    .Enter((so) => { })
-                    .Update((so) =>
-                    {
-                        so.physical_strength--;
-                        so.Log();
-                    })
-                    .When((so) => so.physical_strength <= 0).To(State.Idle)
-                    .Exit((so) => { })
+                .State(State.Run)
+                    .Initialize(so => so.Log("Init Run"))
+                    .Enter(so => so.Log("Enter Run"))
+                    .Update(so => { so.physical_strength--;so.Log(); })
+                    .Exit(so => so.Log("Exit Run"))
+                    .Transition(so => so.physical_strength <=0 )
+                        .Transfer(so => so.Log("Transfer Run"))
+                        .To(State.Idle)
+                    .End()
                 .End()
-                .Initialize().Start(State.Idle);
-
+                .SetDefault(State.Idle)
+                .Build();
             bool running = true;
             ThreadPool.QueueUserWorkItem(_ => { var key = Console.ReadKey(); running = false; });
             while (running)
@@ -61,7 +62,7 @@ namespace Task.Switch.Structure.FSM
                 Thread.Sleep(100);
             }
 
-            machine.Stop();
+
             Console.WriteLine("FSM Stop");
         }
     }
