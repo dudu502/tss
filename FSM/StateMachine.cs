@@ -1,16 +1,12 @@
-﻿using Microsoft.VisualBasic;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Versioning;
 
 namespace Task.Switch.Structure.FSM
 {
-    public class StackState
+    internal class StackState
     {
-        public const byte STATEMACHINE_TYPE = 1;
-        public const byte STATE_TYPE = 2;
-        public const byte TRANSITION_TYPE = 3;
+        public const byte STATE_TYPE = 1;
+        public const byte TRANSITION_TYPE = 2;
         
         public byte Type { private set; get; }
         public object Raw { private set; get; }
@@ -33,6 +29,7 @@ namespace Task.Switch.Structure.FSM
         IStateMachine<TObject> Build();
         IStateMachine<TObject> Any<TState>(Func<TObject, bool> valid, TState toId, Action<TObject> transfer);
         IStateMachine<TObject> Select<TState>(Func<TObject,bool> valid, TState id,TState toId, Action<TObject> transfer);
+
     }
     public interface IState<TObject>
     {
@@ -49,7 +46,6 @@ namespace Task.Switch.Structure.FSM
         ITransition<TObject> To<TState>(TState id);
         IState<TObject> End();
     }
-
     internal class Transition<TObject>
     {
         internal int Id;
@@ -95,7 +91,6 @@ namespace Task.Switch.Structure.FSM
             return validate;
         }
     }
-
     internal class State<TObject>
     {
         internal readonly int Id;
@@ -117,7 +112,7 @@ namespace Task.Switch.Structure.FSM
         }
     }
 
-    public class StateMachine <TObject>: IStateMachine<TObject>,IState<TObject> , ITransition<TObject> where TObject : class
+    public class StateMachine<TObject>: IStateMachine<TObject>,IState<TObject> , ITransition<TObject> where TObject : class
     {
         private State<TObject> m_Current;
         private readonly TObject m_Parameter;
@@ -132,7 +127,20 @@ namespace Task.Switch.Structure.FSM
 
             m_Current = AddState(int.MaxValue);
             AddState(int.MinValue);
-            m_StackBuilder.Push(new StackState(StackState.STATEMACHINE_TYPE, this));
+        }
+
+        private StateMachine(Dictionary<int,State<TObject>>states,Dictionary<int,List<Transition<TObject>>> transitions, TObject param)
+        {
+            m_States = states;
+            m_Transitions = transitions;
+            m_Parameter = param;
+
+            m_Current = m_States[int.MaxValue];
+        }
+
+        public static IStateMachine<TObject> Clone(IStateMachine<TObject> original, TObject param)
+        {
+            return new StateMachine<TObject>(((StateMachine<TObject>)original).m_States, ((StateMachine<TObject>)original).m_Transitions ,param);
         }
 
         public IStateMachine<TObject> SetDefault<TState>(TState id) 
@@ -187,6 +195,7 @@ namespace Task.Switch.Structure.FSM
                 state.RawAs<State<TObject>>().OnInitialize = onInit;
             return this;
         }
+
         IState<TObject> IState<TObject>.Enter(Action<TObject> onEnter)
         {
             StackState state = m_StackBuilder.Peek();
@@ -194,6 +203,7 @@ namespace Task.Switch.Structure.FSM
                 state.RawAs<State<TObject>>().OnEnter = onEnter;
             return this;
         }
+
         IState<TObject> IState<TObject>.Update(Action<TObject> onUpdate)
         {
             StackState state = m_StackBuilder.Peek();
@@ -201,6 +211,7 @@ namespace Task.Switch.Structure.FSM
                 state.RawAs<State<TObject>>().OnUpdate = onUpdate;
             return this;
         }
+
         IState<TObject> IState<TObject>.Exit(Action<TObject> onExit)
         {
             StackState state = m_StackBuilder.Peek();
@@ -249,7 +260,7 @@ namespace Task.Switch.Structure.FSM
             return this;
         }
 
-        IStateMachine<TObject> IStateMachine<TObject>.Select<TState>(Func<TObject, bool> valid, TState id, TState toId, Action<TObject> transfer = null)
+        IStateMachine<TObject> IStateMachine<TObject>.Select<TState>(Func<TObject, bool> valid, TState id, TState toId, Action<TObject> transfer)
         {
             int stateId = Convert.ToInt32(id);
             int toStateId = Convert.ToInt32(toId);
@@ -258,7 +269,7 @@ namespace Task.Switch.Structure.FSM
                     AddTransition(state.Id, toStateId, valid, transfer);
             return this;
         }
-        IStateMachine<TObject> IStateMachine<TObject>.Any<TState>(Func<TObject,bool> valid, TState toId, Action<TObject> transfer = null)
+        IStateMachine<TObject> IStateMachine<TObject>.Any<TState>(Func<TObject,bool> valid, TState toId, Action<TObject> transfer)
         {
             int toStateId = Convert.ToInt32(toId);
             foreach(var state in m_States.Values)
@@ -269,9 +280,9 @@ namespace Task.Switch.Structure.FSM
 
         void IStateMachine<TObject>.Update()
         {
-            if (m_Current != null && !m_Current.IsEnd() && m_Transitions.ContainsKey(m_Current.Id))
+            if (m_Current != null && !m_Current.IsEnd() && m_Transitions.TryGetValue(m_Current.Id,out List<Transition<TObject>> transitions))
             {
-                foreach (Transition<TObject> transition in m_Transitions[m_Current.Id])
+                foreach (Transition<TObject> transition in transitions)
                 {
                     if (transition.OnValidate(m_Parameter))
                     {
@@ -288,6 +299,5 @@ namespace Task.Switch.Structure.FSM
                     m_Current.OnUpdate(m_Parameter);
             }
         }
-
     }
 }

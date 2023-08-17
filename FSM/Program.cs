@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection.PortableExecutable;
 using System.Threading;
 
 namespace Task.Switch.Structure.FSM
@@ -17,10 +18,15 @@ namespace Task.Switch.Structure.FSM
         {
             public const int MAX_PHYSICAL_STRENGTH = 50;
             public int physical_strength = 25;
-
+            public string name;
+            public StateObject(string n,int value)
+            {
+                name = n;
+                physical_strength = value;
+            }
             public void Log()
             {
-                Console.WriteLine("Current physical_strength " + physical_strength);
+                Console.WriteLine(name + "Current physical_strength " + physical_strength);
             }
             public void Log(string value)
             {
@@ -31,7 +37,7 @@ namespace Task.Switch.Structure.FSM
         static void Main(string[] args)
         {
             // Create a state machine
-            IStateMachine<StateObject> machine = new StateMachine<StateObject>(new StateObject())        
+            IStateMachine<StateObject> machine = new StateMachine<StateObject>(new StateObject("TOM ",0))        
                 .State(State.Idle)
                     .Initialize(so => so.Log("Init Idle"))
                     .Enter(so=>so.Log("Enter Idle"))
@@ -55,13 +61,14 @@ namespace Task.Switch.Structure.FSM
                 .SetDefault(State.Idle)
                 .Build();
             bool running = true;
+            IStateMachine<StateObject> i = StateMachine<StateObject>.Clone(machine, new StateObject("Jeffy ",47));
             ThreadPool.QueueUserWorkItem(_ => { var key = Console.ReadKey(); running = false; });
             while (running)
             {
                 machine.Update();
+                i.Update();
                 Thread.Sleep(100);
             }
-
 
             Console.WriteLine("FSM Stop");
         }
