@@ -48,8 +48,8 @@ namespace Task.Switch.Structure.FSM
     }
     internal class Transition<TObject>
     {
-        internal int Id;
-        internal int ToId;
+        public int Id;
+        public int ToId;
         private Func<TObject, bool> m_Validate;
         private Action<TObject> m_Transfer;
 
@@ -93,7 +93,7 @@ namespace Task.Switch.Structure.FSM
     }
     internal class State<TObject>
     {
-        internal readonly int Id;
+        public readonly int Id;
         public Action<TObject> OnInitialize;
         public Action<TObject> OnEnter;
         public Action<TObject> OnUpdate;
@@ -151,7 +151,7 @@ namespace Task.Switch.Structure.FSM
 
         public IStateMachine<TObject> Build()
         {
-            foreach (var state in m_States.Values)
+            foreach (State<TObject> state in m_States.Values)
                 if (state.OnInitialize != null)
                     state.OnInitialize(m_Parameter);
             return this;
@@ -262,19 +262,20 @@ namespace Task.Switch.Structure.FSM
 
         IStateMachine<TObject> IStateMachine<TObject>.Select<TState>(Func<TObject, bool> valid, TState id, TState toId, Action<TObject> transfer)
         {
-            int stateId = Convert.ToInt32(id);
+            int fromStateId = Convert.ToInt32(id);
             int toStateId = Convert.ToInt32(toId);
-            foreach(var state in m_States.Values)
-                if(state.Id == (stateId & state.Id))
-                    AddTransition(state.Id, toStateId, valid, transfer);
+            foreach(int stateId in m_States.Keys)
+                if(stateId == (fromStateId & stateId))
+                    AddTransition(stateId, toStateId, valid, transfer);
             return this;
         }
+
         IStateMachine<TObject> IStateMachine<TObject>.Any<TState>(Func<TObject,bool> valid, TState toId, Action<TObject> transfer)
         {
             int toStateId = Convert.ToInt32(toId);
-            foreach(var state in m_States.Values)
-                if(state.Id != toStateId)
-                    AddTransition(state.Id, toStateId, valid, transfer);
+            foreach(int stateId in m_States.Keys)
+                if(stateId != toStateId)
+                    AddTransition(stateId, toStateId, valid, transfer);
             return this;
         }
 
