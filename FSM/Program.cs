@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Reflection.PortableExecutable;
 using System.Threading;
 
 namespace Task.Switch.Structure.FSM
@@ -36,24 +33,23 @@ namespace Task.Switch.Structure.FSM
 
         static void Main(string[] args)
         {
-            // Create a state machine
-            IStateMachine<StateObject> machine = new StateMachine<StateObject>(new StateObject("TOM ",0))        
+            IStateMachine<StateObject> machine = new StateMachine<StateObject>(new StateObject("TOM ", 0))
                 .State(State.Idle)
                     .Initialize(so => so.Log("Init Idle"))
-                    .Enter(so=>so.Log("Enter Idle"))
+                    .Enter(so => so.Log("Enter Idle"))
                     .Update(so => { so.physical_strength++; so.Log(); })
-                    .Exit(so=>so.Log("Exit Idle"))
-                    .Transition(so=>so.physical_strength>=StateObject.MAX_PHYSICAL_STRENGTH)
-                        .Transfer(so=>so.Log("Transfer Idle"))
+                    .Exit(so => so.Log("Exit Idle"))
+                    .Transition(so => so.physical_strength >= StateObject.MAX_PHYSICAL_STRENGTH)
+                        .Transfer(so => so.Log("Transfer Idle"))
                         .To(State.Run)
                     .End()
                 .End()
                 .State(State.Run)
                     .Initialize(so => so.Log("Init Run"))
                     .Enter(so => so.Log("Enter Run"))
-                    .Update(so => { so.physical_strength--;so.Log(); })
+                    .Update(so => { so.physical_strength--; so.Log(); })
                     .Exit(so => so.Log("Exit Run"))
-                    .Transition(so => so.physical_strength <=0 )
+                    .Transition(so => so.physical_strength <= 0)
                         .Transfer(so => so.Log("Transfer Run"))
                         .To(State.Idle)
                     .End()
@@ -61,7 +57,7 @@ namespace Task.Switch.Structure.FSM
                 .SetDefault(State.Idle)
                 .Build();
             bool running = true;
-            IStateMachine<StateObject> i = StateMachine<StateObject>.Clone(machine, new StateObject("Jeffy ",47));
+            IStateMachine<StateObject> i = StateMachine<StateObject>.Clone(machine, new StateObject("Jeffy ", 47));
             ThreadPool.QueueUserWorkItem(_ => { var key = Console.ReadKey(); running = false; });
             while (running)
             {
