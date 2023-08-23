@@ -63,7 +63,7 @@ namespace Task.Switch.Structure.FSM
             {
                 machine.Update();
                 i.Update();
-                Thread.Sleep(100);
+                Thread.Sleep(50);
             }
 
             Console.WriteLine("FSM Stop");

@@ -35,6 +35,7 @@ namespace Task.Switch.Structure.FSM
     {
         IState<TObject> Initialize(Action<TObject> onInit);
         IState<TObject> Enter(Action<TObject> onEnter);
+        IState<TObject> EarlyUpdate(Action<TObject> onEarlyUpdate);
         IState<TObject> Update(Action<TObject> onUpdate);
         IState<TObject> Exit(Action<TObject> onExit);
         IStateMachine<TObject> End();
@@ -48,8 +49,8 @@ namespace Task.Switch.Structure.FSM
     }
     internal class Transition<TObject>
     {
-        public int Id;
-        public int ToId;
+        public int Id { get; private set; }
+        public int ToId { get; set; }
         private Func<TObject, bool> m_Validate;
         private Action<TObject> m_Transfer;
 
@@ -93,11 +94,12 @@ namespace Task.Switch.Structure.FSM
     }
     internal class State<TObject>
     {
-        public readonly int Id;
+        public int Id { get; private set; }
         public Action<TObject> OnInitialize;
         public Action<TObject> OnEnter;
         public Action<TObject> OnUpdate;
         public Action<TObject> OnExit;
+        public Action<TObject> OnEarlyUpdate;
         public State(int id)
         {
             Id = id;
@@ -118,13 +120,13 @@ namespace Task.Switch.Structure.FSM
         private readonly TObject m_Parameter;
         private readonly Dictionary<int, State<TObject>> m_States;
         private readonly Dictionary<int, List<Transition<TObject>>> m_Transitions;
-        private Stack<StackState> m_StackBuilder = new Stack<StackState>();
+        private Stack<StackState> m_StackBuilder;
         public StateMachine(TObject param)
         {
             m_States = new Dictionary<int, State<TObject>>();
             m_Transitions = new Dictionary<int, List<Transition<TObject>>>();
             m_Parameter = param;
-
+            m_StackBuilder = new Stack<StackState>();
             m_Current = AddState(int.MaxValue);
             AddState(int.MinValue);
         }
@@ -212,6 +214,14 @@ namespace Task.Switch.Structure.FSM
             return this;
         }
 
+        IState<TObject> IState<TObject>.EarlyUpdate(Action<TObject> onEarlyUpdate)
+        {
+            StackState state = m_StackBuilder.Peek();
+            if(state.Type == StackState.STATE_TYPE)
+                state.RawAs<State<TObject>>().OnEarlyUpdate = onEarlyUpdate;
+            return this;
+        }
+
         IState<TObject> IState<TObject>.Exit(Action<TObject> onExit)
         {
             StackState state = m_StackBuilder.Peek();
@@ -283,6 +293,8 @@ namespace Task.Switch.Structure.FSM
         {
             if (m_Current != null && !m_Current.IsEnd() && m_Transitions.TryGetValue(m_Current.Id,out List<Transition<TObject>> transitions))
             {
+                if (m_Current.OnEarlyUpdate != null)
+                    m_Current.OnEarlyUpdate(m_Parameter);
                 foreach (Transition<TObject> transition in transitions)
                 {
                     if (transition.OnValidate(m_Parameter))
