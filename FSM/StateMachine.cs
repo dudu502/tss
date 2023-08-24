@@ -117,9 +117,9 @@ namespace Task.Switch.Structure.FSM
     public class StateMachine<TObject>: IStateMachine<TObject>,IState<TObject> , ITransition<TObject> where TObject : class
     {
         private State<TObject> m_Current;
-        private readonly TObject m_Parameter;
-        private readonly Dictionary<int, State<TObject>> m_States;
-        private readonly Dictionary<int, List<Transition<TObject>>> m_Transitions;
+        private TObject m_Parameter;
+        private Dictionary<int, State<TObject>> m_States;
+        private Dictionary<int, List<Transition<TObject>>> m_Transitions;
         private Stack<StackState> m_StackBuilder;
         public StateMachine(TObject param)
         {
