@@ -3,24 +3,6 @@ using System.Collections.Generic;
 
 namespace Task.Switch.Structure.FSM
 {
-    internal class StackState
-    {
-        public const byte STATE_TYPE = 1;
-        public const byte TRANSITION_TYPE = 2;
-        
-        public byte Type { private set; get; }
-        public object Raw { private set; get; }
-
-        public StackState(byte type, object raw)
-        {
-            Type = type;
-            Raw = raw;
-        }
-        public T RawAs<T>()
-        {
-            return (T)Raw;
-        }
-    }
     public interface IStateMachine<TObject>
     {
         IState<TObject> State<TState>(TState id);
@@ -29,8 +11,8 @@ namespace Task.Switch.Structure.FSM
         IStateMachine<TObject> Build();
         IStateMachine<TObject> Any<TState>(Func<TObject, bool> valid, TState toId, Action<TObject> transfer);
         IStateMachine<TObject> Select<TState>(Func<TObject,bool> valid, TState id,TState toId, Action<TObject> transfer);
-
     }
+
     public interface IState<TObject>
     {
         IState<TObject> Initialize(Action<TObject> onInit);
@@ -41,12 +23,14 @@ namespace Task.Switch.Structure.FSM
         IStateMachine<TObject> End();
         ITransition<TObject> Transition(Func<TObject, bool> valid);
     }
+
     public interface ITransition<TObject> 
     {
         ITransition<TObject> Transfer(Action<TObject> onTransfer);
         ITransition<TObject> To<TState>(TState id);
         IState<TObject> End();
     }
+
     internal class Transition<TObject>
     {
         public int Id { get; private set; }
@@ -92,6 +76,7 @@ namespace Task.Switch.Structure.FSM
             return validate;
         }
     }
+
     internal class State<TObject>
     {
         public int Id { get; private set; }
@@ -116,6 +101,25 @@ namespace Task.Switch.Structure.FSM
 
     public class StateMachine<TObject>: IStateMachine<TObject>,IState<TObject> , ITransition<TObject> where TObject : class
     {
+        private class StackState
+        {
+            public const byte STATE_TYPE = 1;
+            public const byte TRANSITION_TYPE = 2;
+
+            public byte Type { private set; get; }
+            public object Raw { private set; get; }
+
+            public StackState(byte type, object raw)
+            {
+                Type = type;
+                Raw = raw;
+            }
+            public T RawAs<T>()
+            {
+                return (T)Raw;
+            }
+        }
+
         private State<TObject> m_Current;
         private TObject m_Parameter;
         private Dictionary<int, State<TObject>> m_States;
@@ -140,7 +144,7 @@ namespace Task.Switch.Structure.FSM
             m_Current = m_States[int.MaxValue];
         }
 
-        public static IStateMachine<TObject> Clone(IStateMachine<TObject> original, TObject param)
+        public static StateMachine<TObject> Clone(IStateMachine<TObject> original, TObject param)
         {
             return new StateMachine<TObject>(((StateMachine<TObject>)original).m_States, ((StateMachine<TObject>)original).m_Transitions ,param);
         }

@@ -57,7 +57,7 @@ namespace Task.Switch.Structure.FSM
                 .SetDefault(State.Idle)
                 .Build();
             bool running = true;
-            IStateMachine<StateObject> i = StateMachine<StateObject>.Clone(machine, new StateObject("Jeffy ", 47));
+            IStateMachine<StateObject> i = StateMachine<StateObject>.Clone(machine, new StateObject("Jeffy ", 47)).Build();
             ThreadPool.QueueUserWorkItem(_ => { var key = Console.ReadKey(); running = false; });
             while (running)
             {
