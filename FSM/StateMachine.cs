@@ -80,11 +80,12 @@ namespace Task.Switch.Structure.FSM
     internal class State<TObject>
     {
         public int Id { get; private set; }
-        public Action<TObject> OnInitialize;
-        public Action<TObject> OnEnter;
-        public Action<TObject> OnUpdate;
-        public Action<TObject> OnExit;
-        public Action<TObject> OnEarlyUpdate;
+        private Action<TObject> m_OnInitialize;
+        private Action<TObject> m_OnUpdate;
+        private Action<TObject> m_OnEnter;
+        private Action<TObject> m_OnExit;
+        private Action<TObject> m_OnEarlyUpdate;
+
         public State(int id)
         {
             Id = id;
@@ -96,6 +97,51 @@ namespace Task.Switch.Structure.FSM
         public bool IsEnd()
         {
             return Id == int.MinValue;
+        }
+        public void OnInitialize(TObject stateObject)
+        {
+            if (m_OnInitialize != null)
+                m_OnInitialize(stateObject);
+        }
+        public void Initialize(Action<TObject> init)
+        {
+            m_OnInitialize = init;
+        }
+        public void OnEnter(TObject stateObject)
+        {
+            if (m_OnEnter != null)
+                m_OnEnter(stateObject);
+        }
+        public void Enter(Action<TObject> enter)
+        {
+            m_OnEnter = enter;
+        }
+        public void OnUpdate(TObject stateObject)
+        {
+            if (m_OnUpdate != null)
+                m_OnUpdate(stateObject);
+        }
+        public void Update(Action<TObject> update)
+        {
+            m_OnUpdate = update;
+        }
+        public void OnExit(TObject stateObject)
+        {
+            if (m_OnExit != null)
+                m_OnExit(stateObject);
+        }
+        public void Exit(Action<TObject> exit)
+        {
+            m_OnExit = exit;
+        }
+        public void OnEarlyUpdate(TObject stateObject)
+        {
+            if (m_OnEarlyUpdate != null)
+                m_OnEarlyUpdate(stateObject);
+        }
+        public void EarlyUpdate(Action<TObject> earlyUpdate)
+        {
+            m_OnEarlyUpdate = earlyUpdate;
         }
     }
 
@@ -158,8 +204,7 @@ namespace Task.Switch.Structure.FSM
         public IStateMachine<TObject> Build()
         {
             foreach (State<TObject> state in m_States.Values)
-                if (state.OnInitialize != null)
-                    state.OnInitialize(m_Parameter);
+                state.OnInitialize(m_Parameter);
             return this;
         }
 
@@ -198,7 +243,7 @@ namespace Task.Switch.Structure.FSM
         {
             StackState state = m_StackBuilder.Peek();
             if (state.Type == StackState.STATE_TYPE)
-                state.RawAs<State<TObject>>().OnInitialize = onInit;
+                state.RawAs<State<TObject>>().Initialize(onInit);
             return this;
         }
 
@@ -206,7 +251,7 @@ namespace Task.Switch.Structure.FSM
         {
             StackState state = m_StackBuilder.Peek();
             if (state.Type == StackState.STATE_TYPE)
-                state.RawAs<State<TObject>>().OnEnter = onEnter;
+                state.RawAs<State<TObject>>().Enter(onEnter);
             return this;
         }
 
@@ -214,7 +259,7 @@ namespace Task.Switch.Structure.FSM
         {
             StackState state = m_StackBuilder.Peek();
             if (state.Type == StackState.STATE_TYPE)
-                state.RawAs<State<TObject>>().OnUpdate = onUpdate;
+                state.RawAs<State<TObject>>().Update(onUpdate);
             return this;
         }
 
@@ -222,7 +267,7 @@ namespace Task.Switch.Structure.FSM
         {
             StackState state = m_StackBuilder.Peek();
             if(state.Type == StackState.STATE_TYPE)
-                state.RawAs<State<TObject>>().OnEarlyUpdate = onEarlyUpdate;
+                state.RawAs<State<TObject>>().EarlyUpdate(onEarlyUpdate);
             return this;
         }
 
@@ -230,7 +275,7 @@ namespace Task.Switch.Structure.FSM
         {
             StackState state = m_StackBuilder.Peek();
             if (state.Type == StackState.STATE_TYPE)
-                state.RawAs<State<TObject>>().OnExit = onExit;
+                state.RawAs<State<TObject>>().Exit(onExit);
             return this;
         }
 
@@ -297,23 +342,26 @@ namespace Task.Switch.Structure.FSM
         {
             if (m_Current != null && !m_Current.IsEnd() && m_Transitions.TryGetValue(m_Current.Id,out List<Transition<TObject>> transitions))
             {
-                if (m_Current.OnEarlyUpdate != null)
-                    m_Current.OnEarlyUpdate(m_Parameter);
+                m_Current.OnEarlyUpdate(m_Parameter);
                 foreach (Transition<TObject> transition in transitions)
                 {
                     if (transition.OnValidate(m_Parameter))
                     {
-                        if (m_Current.OnExit != null)
-                            m_Current.OnExit(m_Parameter);
-                        m_Current = m_States[transition.ToId];
-                        transition.OnTransfer(m_Parameter);
-                        if (m_Current.OnEnter != null)
+                        m_Current.OnExit(m_Parameter);
+                        if (m_States.ContainsKey(transition.ToId))
+                        {
+                            m_Current = m_States[transition.ToId];
+                            transition.OnTransfer(m_Parameter);
                             m_Current.OnEnter(m_Parameter);
+                        }
+                        else
+                        {
+                            throw new Exception("Use State() to define a State.");
+                        }                 
                         return;
                     }
                 }
-                if(m_Current.OnUpdate != null)
-                    m_Current.OnUpdate(m_Parameter);
+                m_Current.OnUpdate(m_Parameter);
             }
         }
     }
