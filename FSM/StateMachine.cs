@@ -5,6 +5,9 @@ namespace Task.Switch.Structure.FSM
 {
     public interface IStateMachine<TObject>
     {
+        void SetParameter<TObjecct>(TObject param);
+        TObject GetParameter();
+        void Reset();
         IState<TObject> State<TState>(TState id);
         IStateMachine<TObject> SetDefault<TState>(TState id);
         void Update();
@@ -191,6 +194,9 @@ namespace Task.Switch.Structure.FSM
             return new StateMachine<TObject>(((StateMachine<TObject>)original).m_States, ((StateMachine<TObject>)original).m_Transitions ,param);
         }
 
+        public void SetParameter<TObjecct>(TObject param) { m_Parameter = param; }
+        public TObject GetParameter() { return m_Parameter; }
+        public void Reset() { m_Current = m_States[ENTRY]; }
         public IStateMachine<TObject> SetDefault<TState>(TState id) 
         {
             AddTransition(ENTRY, Convert.ToInt32(id), so => true, null);

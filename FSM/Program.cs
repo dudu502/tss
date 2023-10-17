@@ -57,15 +57,15 @@ namespace Task.Switch.Structure.FSM
                 .SetDefault(State.Idle)
                 .Build();
             bool running = true;
-            IStateMachine<StateObject> i = StateMachine<StateObject>.Clone(machine, new StateObject("Jeffy ", 47)).Build();
-            ThreadPool.QueueUserWorkItem(_ => { var key = Console.ReadKey(); running = false; });
+            
+            ThreadPool.QueueUserWorkItem(_ => { var key = Console.ReadKey(); machine.SetParameter<StateObject>(new StateObject("TTTT ", 0)); machine.Reset(); });
             while (running)
             {
                 machine.Update();
-                i.Update();
+
                 Thread.Sleep(50);
             }
-
+            
             Console.WriteLine("FSM Stop");
         }
     }
