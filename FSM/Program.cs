@@ -58,7 +58,7 @@ namespace Task.Switch.Structure.FSM
                 .Build();
             bool running = true;
             
-            ThreadPool.QueueUserWorkItem(_ => { var key = Console.ReadKey(); machine.SetParameter<StateObject>(new StateObject("TTTT ", 0)); machine.Reset(); });
+            ThreadPool.QueueUserWorkItem(_ => { var key = Console.ReadKey(); machine.SetParameter(new StateObject("TTTT ", 0)); machine.Reset(); });
             while (running)
             {
                 machine.Tick();
