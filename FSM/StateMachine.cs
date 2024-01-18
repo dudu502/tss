@@ -82,7 +82,7 @@ namespace Task.Switch.Structure.FSM
         }
     }
 
-    internal class State<TObject>
+    public class State<TObject>
     {
         public int Id { get; private set; }
         private Action<TObject> m_OnInitialize;
@@ -143,7 +143,7 @@ namespace Task.Switch.Structure.FSM
         }
     }
 
-    public class StateMachine<TObject>: IStateMachine<TObject>,IStateDeclarable<TObject> , ITransitionDeclarable<TObject> where TObject : class
+    public sealed class StateMachine<TObject>: IStateMachine<TObject>,IStateDeclarable<TObject> , ITransitionDeclarable<TObject> where TObject : class
     {
         private class StackState
         {

@@ -1,25 +1,30 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using Task.Switch.Structure.HFSM;
+using Task.Switch.Structure.FSM;
 using UnityEngine;
 using UnityEngine.UI;
+using static MyStateObject;
 
-public class StateObject
+public class MyStateObject
 {
-    public const int DEFAULT = 10;
-    public const int DAY_STATE = 1;
-    public const int NIGHT_STATE = 2;
-
-    public const int EATING = 3;
-    public const int WORKING = 4;
-    public const int TALKING = 5;
-
-    public const int EXCITING = 6;
-    public const int IDLE = 7;
-
-    public const int SLEEPING = 8;
-    public const int DREAMING = 9;
+    public enum GlobalState
+    {
+        Default = 1,
+        Day_State = 2,
+        Night_State = 3
+    }
+    public enum DayState
+    {
+        Eating = 1,
+        Working = 2,
+        Talking = 3,
+        Exciting = 4,
+        Idle = 5,
+    }
+    public enum NightState
+    {
+        Sleeping = 1,
+        Dreaming = 2,
+    }
 
     public const int MAX_TIME = 60*60*24;
 
@@ -36,14 +41,17 @@ public class StateObject
 
     public TMPro.TMP_Text infoText;
     public Timer timer;
-    public StateObject(Player player,Image background, TMPro.TMP_Text infoText)
+    public MyStateObject(Player player,Image background, TMPro.TMP_Text infoText)
     {
         timer = new Timer();
         this.player = player;
         this.background = background;
         this.infoText = infoText;
     }
-    
+    public static MyStateObject As(object param)
+    {
+        return ((MyStateObject)param);
+    }
     public void TimePass()
     {
         timestamp += 20;
@@ -69,7 +77,13 @@ public class StateObject
     {
         return (timestamp >= 0 && timestamp <= (1 / 4f * MAX_TIME)) || timestamp>(3/4f*MAX_TIME);
     }
+
+    public override string ToString()
+    {
+        return $"[Time:{TimeString()} IsDay:{IsDay()} IsNight:{IsNight()}]";
+    }
 }
+
 
 public class MainScene : MonoBehaviour
 {
@@ -78,81 +92,112 @@ public class MainScene : MonoBehaviour
     [SerializeField] Player player;
     [SerializeField] Image backgroundImage;
     [SerializeField] TMPro.TMP_Text infoText;
-    StateMachine<StateObject> stateMachine;
 
+    StateMachine stateMachine;
+    
     void Start()
     {
-        StateMachineLogger.LogInfo = Debug.LogError;
-        stateMachine = new StateMachine<StateObject>(new StateObject(player, backgroundImage, infoText));
-        stateMachine
-            .Builder
-                .NewState(StateObject.DEFAULT)
-                    .Initialize(so => { })
-                    .When(so => so.IsDay()).To(StateObject.DAY_STATE)
-                    .When(so => so.IsNight()).To(StateObject.NIGHT_STATE)
-                .End()
-                .NewStateMachine(StateObject.DAY_STATE)
-                    .Initialize(so => { })
-                    .Enter(so => so.background.color = dayColor)
-                    .Update(so => so.TimePass())
-                    .When(so => so.IsNight()).To(StateObject.NIGHT_STATE)
-                    .Builder
-                        .NewState(StateObject.IDLE)
-                            .Initialize(so => { })
-                            .Update(so => so.ShowPlayerInfo("idle", 1))
-                            .When(so => true).To(StateObject.EATING)
-                        .End()
-                        .NewState(StateObject.EATING)
-                            .Initialize(so => { })
-                            .Enter(so => so.timer.Reset())
-                            .Update(so => so.ShowPlayerInfo("eating", so.timer / StateObject.EATING_SECS))
-                            .When(so => so.timer > StateObject.EATING_SECS).To(StateObject.TALKING)
-                        .End()
-                        .NewState(StateObject.TALKING)
-                            .Initialize(so => { })
-                            .Enter(so => so.timer.Reset())
-                            .Update(so => so.ShowPlayerInfo("talking", so.timer / StateObject.TALKING_SECS))
-                            .When(so => so.timer > StateObject.TALKING_SECS).To(StateObject.WORKING)
-                        .End()
-                        .NewState(StateObject.WORKING)
-                            .Initialize(so => { })
-                            .Enter(so => so.timer.Reset())
-                            .Update(so => so.ShowPlayerInfo("working", so.timer / StateObject.WORKING_SECS))
-                            .When(so => so.timer > StateObject.WORKING_SECS).To(StateObject.EXCITING)
-                        .End()
-                        .NewState(StateObject.EXCITING)
-                            .Initialize(so => { })
-                            .Enter(so => so.timer.Reset())
-                            .Update(so => so.ShowPlayerInfo("exciting", so.timer / StateObject.EXCITING_SECS))
-                            .When(so => so.timer > StateObject.EXCITING_SECS).To(StateObject.IDLE)
-                        .End()
-                    .SetDefault(StateObject.IDLE).Build()
-                .End()
-                .NewStateMachine(StateObject.NIGHT_STATE)
-                    .Initialize(so => { })
-                    .Enter(so => so.background.color = nightColor)
-                    .Update(so => so.TimePass())
-                    .When(so => so.IsDay()).To(StateObject.DAY_STATE)
-                    .Builder
-                        .NewState(StateObject.SLEEPING)
-                            .Initialize(so => { })
-                            .Enter(so => so.timer.Reset())
-                            .Update(so => so.ShowPlayerInfo("sleeping", so.timer / StateObject.SLEEPING_SECS))
-                            .When(so => so.timer > StateObject.SLEEPING_SECS).To(StateObject.DREAMING)
-                        .End()
-                        .NewState(StateObject.DREAMING)
-                            .Initialize(so => { })
-                            .Enter(so => so.timer.Reset())
-                            .Update(so => so.ShowPlayerInfo("dreaming", so.timer / StateObject.DREAMING_SECS))
-                            .When(so => so.timer > StateObject.DREAMING_SECS).To(StateObject.SLEEPING)
-                        .End()
-                    .SetDefault(StateObject.SLEEPING).Build()
-                .End()
-                .SetDefault(StateObject.DEFAULT).Build();
+        StateMachineDebug.Log = Debug.Log;
+        StateMachineDebug.Filter = StateMachineDebug.LogFilter.Everything;
+        var obj = new MyStateObject(player, backgroundImage, infoText);
+        stateMachine = new StateMachine(obj)
+        #region DEFAULT STATE
+            .NewState(GlobalState.Default)
+                .Initialize(so => { })
+                .Transition(so => MyStateObject.As(so).IsDay()).To(GlobalState.Day_State).End()
+                .Transition(so => MyStateObject.As(so).IsNight()).To(GlobalState.Night_State).End()
+            .End()
+        #endregion
+        #region DAY STATE
+            .NewState(GlobalState.Day_State, obj)
+                .Initialize(so => { })
+                .Enter(so => MyStateObject.As(so).background.color = dayColor)
+                .Update(so => MyStateObject.As(so).TimePass())
+                .Transition(so => MyStateObject.As(so).IsNight()).To(GlobalState.Night_State).End()
+                .Exit(so => { })
+                .AsStateMachine()
+        #region SUB IDLE STATE
+                    .NewState(DayState.Idle)
+                        .Initialize(so => { })
+                        .Enter(so => { })
+                        .Update(so => MyStateObject.As(so).ShowPlayerInfo("idle", 1))
+                        .Exit(so => { })
+                        .Transition(so => true).To(DayState.Eating).End()
+                    .End()
+        #endregion
+        #region SUB EATING STATE
+                    .NewState(DayState.Eating)
+                        .Initialize(so => { })
+                        .Enter(so => MyStateObject.As(so).timer.Reset())
+                        .Update(so => MyStateObject.As(so).ShowPlayerInfo("eating", MyStateObject.As(so).timer / MyStateObject.EATING_SECS))
+                        .Exit(so => { })
+                        .Transition(so => MyStateObject.As(so).timer > MyStateObject.EATING_SECS).To(DayState.Talking).End()
+                    .End()
+        #endregion
+        #region SUB TALKING STATE
+                    .NewState(DayState.Talking)
+                        .Initialize(so => { })
+                        .Enter(so => MyStateObject.As(so).timer.Reset())
+                        .Update(so => MyStateObject.As(so).ShowPlayerInfo("talking", MyStateObject.As(so).timer / MyStateObject.TALKING_SECS))
+                        .Exit(so => { })
+                        .Transition(so => MyStateObject.As(so).timer > MyStateObject.TALKING_SECS).To(DayState.Working).End()
+                    .End()
+        #endregion
+        #region SUB WORKING STATE
+                    .NewState(DayState.Working)
+                        .Initialize(so => { })
+                        .Enter(so => MyStateObject.As(so).timer.Reset())
+                        .Update(so => MyStateObject.As(so).ShowPlayerInfo("working", MyStateObject.As(so).timer / MyStateObject.WORKING_SECS))
+                        .Exit(so => { })
+                        .Transition(so => MyStateObject.As(so).timer > MyStateObject.WORKING_SECS).To(DayState.Exciting).End()
+                    .End()
+        #endregion
+        #region SUB EXCITING STATE
+                    .NewState(DayState.Exciting)
+                        .Initialize(so => { })
+                        .Enter(so => MyStateObject.As(so).timer.Reset())
+                        .Update(so => MyStateObject.As(so).ShowPlayerInfo("exciting", MyStateObject.As(so).timer / MyStateObject.EXCITING_SECS))
+                        .Exit(so => { })
+                        .Transition(so => MyStateObject.As(so).timer > MyStateObject.EXCITING_SECS).To(DayState.Idle).End()
+                    .End()
+        #endregion
+                    .SetDefault(DayState.Idle).Build()
+            .End()
+        #endregion
+        #region NIGHT STATE
+            .NewState(GlobalState.Night_State, obj)
+                .Initialize(so => { })
+                .Enter(so => MyStateObject.As(so).background.color = nightColor)
+                .Update(so => MyStateObject.As(so).TimePass())
+                .Exit(so => { })
+                .Transition(so => MyStateObject.As(so).IsDay()).To(GlobalState.Day_State).End()
+                .AsStateMachine()
+        #region SUB SLEEPING STATE
+                    .NewState(NightState.Sleeping)
+                        .Initialize(so => { })
+                        .Enter(so => MyStateObject.As(so).timer.Reset())
+                        .Update(so => MyStateObject.As(so).ShowPlayerInfo("sleeping", MyStateObject.As(so).timer / MyStateObject.SLEEPING_SECS))
+                        .Exit(so => { })
+                        .Transition(so => MyStateObject.As(so).timer > MyStateObject.SLEEPING_SECS).To(NightState.Dreaming).End()
+                    .End()
+        #endregion
+        #region SUB DREAMING STATE
+                    .NewState(NightState.Dreaming)
+                        .Initialize(so => { })
+                        .Enter(so => MyStateObject.As(so).timer.Reset())
+                        .Update(so => MyStateObject.As(so).ShowPlayerInfo("dreaming", MyStateObject.As(so).timer / MyStateObject.DREAMING_SECS))
+                        .Exit(so => { })
+                        .Transition(so => MyStateObject.As(so).timer > MyStateObject.DREAMING_SECS).To(NightState.Sleeping).End()
+                    .End()
+        #endregion
+                    .SetDefault(NightState.Sleeping).Build()
+            .End()
+        #endregion
+            .SetDefault(GlobalState.Default).Build();
     }
 
     void Update()
     {
-        stateMachine.Update();
+        stateMachine.Tick();
     }
 }
