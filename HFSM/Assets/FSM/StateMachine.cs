@@ -141,7 +141,7 @@ namespace Task.Switch.Structure.FSM
                     StateMachineDebug.Log($"<color=#ff8000>StateId:{Id} {nameof(OnEarlyUpdate)} Parameters:{param}</color>");
             }
         }
-        public virtual void OnUpdate<TObject>(TObject param)
+        public virtual void OnUpdate(object param)
         {
             if (m_OnUpdate != null)
             {
@@ -185,20 +185,18 @@ namespace Task.Switch.Structure.FSM
             return m_Parent;
         }
 
-        public IStateMachine AsStateMachine()
+        public virtual IStateMachine AsStateMachine()
         {
-            if(!(this is IStateMachine))
-                throw new Exception("Use the correct NewState() to create a StateMachine.");
-            return this as IStateMachine;
+            throw new Exception("Use the correct State() to create a StateMachine.");
         }
     }
     public interface IStateMachine
     {
-        void Tick();
-        StateBase NewState<TState>(TState id) where TState : Enum;
-        StateMachine NewState<TState>(TState id, object param) where TState : Enum;
+        void Update();
+        StateBase State<TState>(TState id) where TState : Enum;
+        StateMachine State<TState>(TState id, object param) where TState : Enum;
         StateMachine SetDefault<TState>(TState id) where TState : Enum;
-        StateMachine Build();
+        StateMachine Initialize();
         void AddState(StateBase state);
         void AddTransition(TransitionBase transition);
 
@@ -243,6 +241,8 @@ namespace Task.Switch.Structure.FSM
         }
         private void _Initialize(object param)
         {
+            if(param == null) 
+                throw new ArgumentNullException("StateMachine(object param)");
             m_Parameter = param;
             m_Transitions = new Dictionary<int, List<TransitionBase>>();
             m_States = new Dictionary<int, StateBase>();
@@ -250,12 +250,10 @@ namespace Task.Switch.Structure.FSM
             m_States[ENTRY].m_Parent = this;
             m_States[END] = new StateBase(END);
             m_States[END].m_Parent = this;
-            m_Current = m_States[ENTRY];
+            Reset();
         }
 
-
-
-        public StateBase NewState<TState>(TState id) where TState : Enum
+        public StateBase State<TState>(TState id) where TState : Enum
         {
             StateBase state = new StateBase(Convert.ToInt32(id));
             m_States[state.Id] = state;
@@ -263,12 +261,11 @@ namespace Task.Switch.Structure.FSM
             return state;
         }
 
-        public StateMachine NewState<TState>(TState id, object param) where TState : Enum
+        public StateMachine State<TState>(TState id, object param) where TState : Enum
         {
-            StateMachine machine = new StateMachine(param, Convert.ToInt32(id));
+            StateMachine machine = new StateMachine(param ?? m_Parameter, Convert.ToInt32(id));
             m_States[machine.Id] = machine;
             machine.m_Parent = this;
-            
             return machine;
         }
 
@@ -277,12 +274,10 @@ namespace Task.Switch.Structure.FSM
             AddTransition(new TransitionBase(ENTRY, Convert.ToInt32(defaultId), (so) => true, null));
             return this;
         }
-        public StateMachine Build()
+        public StateMachine Initialize()
         {
             foreach (StateBase state in m_States.Values)
-            {
                 state.OnInitialize(m_Parameter);
-            }
             return this;
         }
 
@@ -310,7 +305,16 @@ namespace Task.Switch.Structure.FSM
             base.OnExit(param);
         }
 
-        public void Tick()
+        public override void OnUpdate(object param)
+        {
+            base.OnUpdate(param);
+            Update();
+        }
+        public override IStateMachine AsStateMachine()
+        {
+            return this;
+        }
+        public void Update()
         {
             if (m_Current != null && m_Current.Id != END && m_Transitions.TryGetValue(m_Current.Id, out List<TransitionBase> translations))
             {
@@ -329,17 +333,12 @@ namespace Task.Switch.Structure.FSM
                         }
                         else
                         {
-                            throw new Exception("Use NewState() to define a State or a StateMachine.");
+                            throw new Exception("Use State() to define a State or a StateMachine.");
                         }
                         return;
                     }
                 }
                 m_Current.OnUpdate(m_Parameter);
-
-                if (m_Current is IStateMachine)
-                {
-                    ((IStateMachine)m_Current).Tick();
-                }
             }
         }
     }
