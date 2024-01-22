@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using static Task.Switch.Structure.FSM.StateMachine;
+
 
 namespace Task.Switch.Structure.FSM
 {
@@ -22,22 +22,22 @@ namespace Task.Switch.Structure.FSM
         public static LogFilter Filter = LogFilter.Nothing;
     }
 
-    public class TransitionBase
+    public class TransitionBase<TObject>
     {
-        internal StateBase m_ParentState { get; set; }
+        internal StateBase<TObject> m_ParentState { get; set; }
         public int Id { get; private set; }
         public int ToId { get; set; }
-        private Func<object, bool> m_Validate;
-        private Action<object> m_Transfer;
+        private Func<TObject, bool> m_Validate;
+        private Action<TObject> m_Transfer;
 
-        public TransitionBase(int id, int toId, Func<object, bool> valid, Action<object> transfer)
+        public TransitionBase(int id, int toId, Func<TObject, bool> valid, Action<TObject> transfer)
         {
             Id = id;
             ToId = toId;
             m_Validate = valid;
             m_Transfer = transfer;
         }
-        internal bool OnValidate(object param)
+        internal bool OnValidate(TObject param)
         {
             bool validate = false;
             if (m_Validate != null)
@@ -48,7 +48,7 @@ namespace Task.Switch.Structure.FSM
             }
             return validate;
         }
-        internal void OnTransfer(object param)
+        internal void OnTransfer(TObject param)
         {
             if (m_Transfer != null)
             {
@@ -57,73 +57,73 @@ namespace Task.Switch.Structure.FSM
                     StateMachineDebug.Log($"<color=white>Transition:{Id}->{ToId} {nameof(OnTransfer)} Parameters:{param}</color>");
             }
         }
-        public TransitionBase Transfer(Action<object> transfer)
+        public TransitionBase<TObject> Transfer(Action<TObject> transfer)
         {
             m_Transfer = transfer;
             return this;
         }
-        public TransitionBase To<TState>(TState toId) where TState : Enum
+        public TransitionBase<TObject> To<TState>(TState toId) where TState : Enum
         {
             ToId = Convert.ToInt32(toId);
             return this;
         }
 
-        public TransitionBase ToEnd()
+        public TransitionBase<TObject> ToEnd()
         {
-            ToId = StateMachine.END;
+            ToId = StateMachineConst.END;
             return this;
         }
 
-        public TransitionBase ToEntry()
+        public TransitionBase<TObject> ToEntry()
         {
-            ToId = StateMachine.ENTRY;
+            ToId = StateMachineConst.ENTRY;
             return this;
         }
 
-        public StateBase End()
+        public StateBase<TObject> End()
         {
             return m_ParentState;
         }
     }
 
-    public class StateBase
+    public class StateBase<TObject>
     {
-        internal IStateMachine m_Parent;
+        internal StateMachine<TObject> m_Parent;
         public int Id { get; private set; }
-        private Action<object> m_OnInitialize;
-        private Action<object> m_OnEnter;
-        private Action<object> m_OnUpdate;
-        private Action<object> m_OnExit;
-        private Action<object> m_OnEarlyUpdate;
+        private Action<TObject> m_OnInitialize;
+        private Action<TObject> m_OnEnter;
+        private Action<TObject> m_OnUpdate;
+        private Action<TObject> m_OnExit;
+        private Action<TObject> m_OnEarlyUpdate;
 
-        public virtual StateBase Initialize(Action<object> init)
+        public virtual StateBase<TObject> Initialize(Action<TObject> init)
         {
             m_OnInitialize = init;
             return this;
         }
 
-        public virtual StateBase Enter(Action<object> enter)
+        public virtual StateBase<TObject> Enter(Action<TObject> enter)
         {
             m_OnEnter = enter;
             return this;
         }
-        public virtual StateBase Update(Action<object> update)
+        public virtual StateBase<TObject> Update(Action<TObject> update)
         {
             m_OnUpdate = update;
             return this;
         }
-        public virtual StateBase EarlyUpdate(Action<object> earlyUpdate)
+        public virtual StateBase<TObject> EarlyUpdate(Action<TObject> earlyUpdate)
         {
             m_OnEarlyUpdate = earlyUpdate;
             return this;
         }
-        public virtual StateBase Exit(Action<object> exit)
+        public virtual StateBase<TObject> Exit(Action<TObject> exit)
         {
             m_OnExit = exit;
             return this;
         }
 
-        public virtual void OnEnter(object param)
+        internal virtual void OnEnter(TObject param)
         {
             if (m_OnEnter != null)
             {
@@ -132,7 +132,7 @@ namespace Task.Switch.Structure.FSM
                     StateMachineDebug.Log($"<color=magenta>StateId:{Id} {nameof(OnEnter)} Parameters:{param}</color>");
             }
         }
-        public virtual void OnEarlyUpdate(object param)
+        internal virtual void OnEarlyUpdate(TObject param)
         {
             if (m_OnEarlyUpdate != null)
             {
@@ -141,7 +141,7 @@ namespace Task.Switch.Structure.FSM
                     StateMachineDebug.Log($"<color=#ff8000>StateId:{Id} {nameof(OnEarlyUpdate)} Parameters:{param}</color>");
             }
         }
-        public virtual void OnUpdate(object param)
+        internal virtual void OnUpdate(TObject param)
         {
             if (m_OnUpdate != null)
             {
@@ -150,7 +150,7 @@ namespace Task.Switch.Structure.FSM
                     StateMachineDebug.Log($"<color=yellow>StateId:{Id} {nameof(OnUpdate)} Parameters:{param}</color>");
             }
         }
-        public virtual void OnExit(object param)
+        internal virtual void OnExit(TObject param)
         {
             if (m_OnExit != null)
             {
@@ -159,7 +159,7 @@ namespace Task.Switch.Structure.FSM
                     StateMachineDebug.Log($"<color=red>StateId:{Id} {nameof(OnExit)} Parameters:{param}</color>");
             }
         }
-        public virtual void OnInitialize(object param)
+        internal virtual void OnInitialize(TObject param)
         {
             if (m_OnInitialize != null)
             {
@@ -173,159 +173,140 @@ namespace Task.Switch.Structure.FSM
             Id = id;
         }
 
-        public TransitionBase Transition(Func<object, bool> valid)
+        public TransitionBase<TObject> Transition(Func<TObject, bool> valid)
         {
-            TransitionBase transition = new TransitionBase(Id, 0, valid, null);
+            TransitionBase<TObject> transition = new TransitionBase<TObject>(Id, 0, valid, null);
             transition.m_ParentState = this;
             m_Parent.AddTransition(transition);
             return transition;
         }
-        public IStateMachine End()
+        public StateMachine<TObject> End()
         {
             return m_Parent;
         }
-
-        public virtual IStateMachine AsStateMachine()
-        {
-            throw new Exception("Use the correct State() to create a StateMachine.");
-        }
     }
-    public interface IStateMachine
+    
+    internal class StateMachineConst
     {
-        void Update();
-        StateBase State<TState>(TState id) where TState : Enum;
-        StateMachine State<TState>(TState id, object param) where TState : Enum;
-        StateMachine SetDefault<TState>(TState id) where TState : Enum;
-        StateMachine Initialize();
-        void AddState(StateBase state);
-        void AddTransition(TransitionBase transition);
-
-        StateMachine Select<TState>(Func<object,bool> valid,TState id,TState toId, Action<object> transfer) where TState : Enum;
-        StateMachine Any<TState>(Func<object, bool> valid,TState toId, Action<object> transfer) where TState : Enum;
-    }
-    public class StateMachine : StateBase, IStateMachine
-    {
-
-        Dictionary<int, StateBase> m_States;
-        Dictionary<int, List<TransitionBase>> m_Transitions;
-        StateBase m_Current;
-        object m_Parameter;
-
-
         public const int ENTRY = int.MaxValue - 1;
         public const int END = int.MaxValue;
-        public StateMachine(object param, int id) : base(id)
+    }
+    public class StateMachine<TObject> : StateBase<TObject>
+    {
+        Dictionary<int, StateBase<TObject>> m_States;
+        Dictionary<int, List<TransitionBase<TObject>>> m_Transitions;
+        StateBase<TObject> m_Current;
+        TObject m_Parameter;
+        
+        public StateMachine(TObject param, int id) : base(id)
         {
             _Initialize(param);
         }
 
-        public StateMachine(object param) : base(int.MinValue)
+        public StateMachine(TObject param) : base(int.MinValue)
         {
             _Initialize(param);
         }
 
         public void Reset()
         {
-            m_Current = m_States[ENTRY];
+            m_Current = m_States[StateMachineConst.ENTRY];
         }
 
-        public void AddState(StateBase state)
+        public void AddState(StateBase<TObject> state)
         {
             m_States[state.Id] = state;
         }
-        public void AddTransition(TransitionBase transition)
+        public void AddTransition(TransitionBase<TObject> transition)
         {
             if (!m_Transitions.ContainsKey(transition.Id))
-                m_Transitions[transition.Id] = new List<TransitionBase>();
+                m_Transitions[transition.Id] = new List<TransitionBase<TObject>>();
             m_Transitions[transition.Id].Add(transition);
         }
-        private void _Initialize(object param)
+        private void _Initialize(TObject param)
         {
             if(param == null) 
-                throw new ArgumentNullException("StateMachine(object param)");
+                throw new ArgumentNullException("StateMachine(TObject param)");
             m_Parameter = param;
-            m_Transitions = new Dictionary<int, List<TransitionBase>>();
-            m_States = new Dictionary<int, StateBase>();
-            m_States[ENTRY] = new StateBase(ENTRY);
-            m_States[ENTRY].m_Parent = this;
-            m_States[END] = new StateBase(END);
-            m_States[END].m_Parent = this;
+            m_Transitions = new Dictionary<int, List<TransitionBase<TObject>>>();
+            m_States = new Dictionary<int, StateBase<TObject>>();
+            m_States[StateMachineConst.ENTRY] = new StateBase<TObject>(StateMachineConst.ENTRY);
+            m_States[StateMachineConst.ENTRY].m_Parent = this;
+            m_States[StateMachineConst.END] = new StateBase<TObject>(StateMachineConst.END);
+            m_States[StateMachineConst.END].m_Parent = this;
             Reset();
         }
 
-        public StateBase State<TState>(TState id) where TState : Enum
+        public StateBase<TObject> State<TState>(TState id) where TState : Enum
         {
-            StateBase state = new StateBase(Convert.ToInt32(id));
+            StateBase<TObject> state = new StateBase<TObject>(Convert.ToInt32(id));
             m_States[state.Id] = state;
             state.m_Parent = this;
             return state;
         }
 
-        public StateMachine State<TState>(TState id, object param) where TState : Enum
+        public StateMachine<TObject> Machine<TState>(TState id) where TState : Enum
         {
-            StateMachine machine = new StateMachine(param ?? m_Parameter, Convert.ToInt32(id));
+            StateMachine<TObject> machine = new StateMachine<TObject>(m_Parameter, Convert.ToInt32(id));
             m_States[machine.Id] = machine;
             machine.m_Parent = this;
             return machine;
         }
 
-        public StateMachine SetDefault<TState>(TState defaultId) where TState : Enum
+        public StateMachine<TObject> SetDefault<TState>(TState defaultId) where TState : Enum
         {
-            AddTransition(new TransitionBase(ENTRY, Convert.ToInt32(defaultId), (so) => true, null));
+            AddTransition(new TransitionBase<TObject>(StateMachineConst.ENTRY, Convert.ToInt32(defaultId), (so) => true, null));
             return this;
         }
-        public StateMachine Initialize()
+        public StateMachine<TObject> Build()
         {
-            foreach (StateBase state in m_States.Values)
+            foreach (StateBase<TObject> state in m_States.Values)
                 state.OnInitialize(m_Parameter);
             return this;
         }
 
-        public StateMachine Select<TState>(Func<object, bool> valid, TState id, TState toId, Action<object> transfer) where TState : Enum
+        public StateMachine<TObject> Select<TState>(Func<TObject, bool> valid, TState id, TState toId, Action<TObject> transfer) where TState : Enum
         {
             int fromStateId = Convert.ToInt32(id);
             int toStateId = Convert.ToInt32(toId);
             foreach(int stateId in m_States.Keys)
                 if(stateId == (fromStateId & stateId))
-                    AddTransition(new TransitionBase(stateId,toStateId,valid,transfer));
+                    AddTransition(new TransitionBase<TObject>(stateId,toStateId,valid,transfer));
             return this;
         }
-        public StateMachine Any<TState>(Func<object, bool> valid, TState toId, Action<object> transfer) where TState : Enum
+        public StateMachine<TObject> Any<TState>(Func<TObject, bool> valid, TState toId, Action<TObject> transfer) where TState : Enum
         {
             int toStateId = Convert.ToInt32(toId);
             foreach (int stateId in m_States.Keys)
                 if (stateId != toStateId)
-                    AddTransition(new TransitionBase(stateId,toStateId,valid,transfer));
+                    AddTransition(new TransitionBase<TObject>(stateId,toStateId,valid,transfer));
             return this;
         }
-        public override void OnExit(object param)
+        internal override void OnExit(TObject param)
         {
             m_Current.OnExit(m_Parameter);
             Reset();
             base.OnExit(param);
         }
 
-        public override void OnUpdate(object param)
+        internal override void OnUpdate(TObject param)
         {
             base.OnUpdate(param);
             Update();
         }
-        public override IStateMachine AsStateMachine()
-        {
-            return this;
-        }
+
         public void Update()
         {
-            if (m_Current != null && m_Current.Id != END && m_Transitions.TryGetValue(m_Current.Id, out List<TransitionBase> translations))
+            if (m_Current != null && m_Current.Id != StateMachineConst.END && m_Transitions.TryGetValue(m_Current.Id, out List<TransitionBase<TObject>> translations))
             {
                 m_Current.OnEarlyUpdate(m_Parameter);
-                foreach (TransitionBase transition in translations)
+                foreach (TransitionBase<TObject> transition in translations)
                 {
                     if (transition.OnValidate(m_Parameter))
                     {
                         m_Current.OnExit(m_Parameter);
 
-                        if (m_States.TryGetValue(transition.ToId, out StateBase next))
+                        if (m_States.TryGetValue(transition.ToId, out StateBase<TObject> next))
                         {
                             m_Current = next;
                             transition.OnTransfer(m_Parameter);
@@ -333,7 +314,7 @@ namespace Task.Switch.Structure.FSM
                         }
                         else
                         {
-                            throw new Exception("Use State() to define a State or a StateMachine.");
+                            throw new Exception("Use State(TState) or Machine(TState) to define a State or a StateMachine.");
                         }
                         return;
                     }
