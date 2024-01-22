@@ -213,10 +213,6 @@ namespace Task.Switch.Structure.FSM
             m_Current = m_States[StateMachineConst.ENTRY];
         }
 
-        public void AddState(StateBase<TObject> state)
-        {
-            m_States[state.Id] = state;
-        }
         public void AddTransition(TransitionBase<TObject> transition)
         {
             if (!m_Transitions.ContainsKey(transition.Id))

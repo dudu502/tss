@@ -48,10 +48,6 @@ public class MyStateObject
         this.background = background;
         this.infoText = infoText;
     }
-    public static MyStateObject As(object param)
-    {
-        return ((MyStateObject)param);
-    }
     public void TimePass()
     {
         timestamp += 20;
