@@ -264,11 +264,22 @@ namespace Task.Switch.Structure.FSM
                 m_Transitions[transition.Id] = new List<TransitionBase<TObject>>();
             m_Transitions[transition.Id].Add(transition);
         }
-        private void _Initialize(TObject param)
+
+        public void SetParameter(TObject param)
         {
-            if(param == null) 
+            if (param == null)
                 throw new ArgumentNullException("StateMachine(TObject param)");
             m_Parameter = param;
+        }
+
+        public TObject GetParameter()
+        {
+            return m_Parameter;
+        }
+
+        private void _Initialize(TObject param)
+        {
+            SetParameter(param);
             m_Transitions = new Dictionary<int, List<TransitionBase<TObject>>>();
             m_States = new Dictionary<int, StateBase<TObject>>();
             m_States[StateMachineConst.ENTRY] = new StateBase<TObject>(StateMachineConst.ENTRY,this);
