@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using UnityEngine;
 
 namespace Task.Switch.Structure.FSM
 {
@@ -24,19 +24,27 @@ namespace Task.Switch.Structure.FSM
 
     public class TransitionBase<TObject>
     {
-        internal StateBase<TObject> m_ParentState { get; set; }
+        private StateBase<TObject> m_ParentState;
         public int Id { get; private set; }
         public int ToId { get; set; }
         private Func<TObject, bool> m_Validate;
         private Action<TObject> m_Transfer;
 
-        public TransitionBase(int id, int toId, Func<TObject, bool> valid, Action<TObject> transfer)
+        public TransitionBase(int id, int toId, Func<TObject, bool> valid, Action<TObject> transfer,StateBase<TObject> stateBase)
         {
+            m_ParentState = stateBase;
             Id = id;
             ToId = toId;
             m_Validate = valid;
             m_Transfer = transfer;
         }
+
+        public TransitionBase<TObject> Clone(StateBase<TObject> stateBase)
+        {
+            TransitionBase<TObject> clone = new TransitionBase<TObject>(Id,ToId,m_Validate,m_Transfer,stateBase);
+            return clone;
+        }
+
         internal bool OnValidate(TObject param)
         {
             bool validate = false;
@@ -88,13 +96,13 @@ namespace Task.Switch.Structure.FSM
 
     public class StateBase<TObject>
     {
-        internal StateMachine<TObject> m_Parent;
+        private StateMachine<TObject> m_Parent;
         public int Id { get; private set; }
-        private Action<TObject> m_OnInitialize;
-        private Action<TObject> m_OnEnter;
-        private Action<TObject> m_OnUpdate;
-        private Action<TObject> m_OnExit;
-        private Action<TObject> m_OnEarlyUpdate;
+        protected Action<TObject> m_OnInitialize;
+        protected Action<TObject> m_OnEnter;
+        protected Action<TObject> m_OnUpdate;
+        protected Action<TObject> m_OnExit;
+        protected Action<TObject> m_OnEarlyUpdate;
 
         public virtual StateBase<TObject> Initialize(Action<TObject> init)
         {
@@ -168,15 +176,24 @@ namespace Task.Switch.Structure.FSM
                     StateMachineDebug.Log($"<color=green>StateId:{Id} {nameof(OnInitialize)} Parameters:{param}</color>");
             }
         }
-        public StateBase(int id)
+        public StateBase(int id,StateMachine<TObject> stateMachine)
         {
             Id = id;
+            m_Parent = stateMachine;
         }
-
+        public virtual StateBase<TObject> Clone(TObject param,int id, StateMachine<TObject> stateMachine)
+        {
+            StateBase<TObject> clone = new StateBase<TObject>(id, stateMachine);
+            clone.EarlyUpdate(m_OnEarlyUpdate);
+            clone.Initialize(m_OnInitialize);
+            clone.Enter(m_OnEnter);
+            clone.Exit(m_OnExit);
+            clone.Update(m_OnUpdate);
+            return clone;
+        }
         public TransitionBase<TObject> Transition(Func<TObject, bool> valid)
         {
-            TransitionBase<TObject> transition = new TransitionBase<TObject>(Id, 0, valid, null);
-            transition.m_ParentState = this;
+            TransitionBase<TObject> transition = new TransitionBase<TObject>(Id, 0, valid, null,this);
             m_Parent.AddTransition(transition);
             return transition;
         }
@@ -198,14 +215,42 @@ namespace Task.Switch.Structure.FSM
         StateBase<TObject> m_Current;
         TObject m_Parameter;
         
-        public StateMachine(TObject param, int id) : base(id)
+        public StateMachine(TObject param, int id, StateMachine<TObject> parent) : base(id,parent)
         {
             _Initialize(param);
         }
 
-        public StateMachine(TObject param) : base(int.MinValue)
+        public StateMachine(TObject param) : base(int.MinValue,null)
         {
             _Initialize(param);
+        }
+
+        public static StateMachine<TObject> Clone(TObject param, StateMachine<TObject> stateMachine)
+        {
+            return (StateMachine<TObject>)stateMachine.Clone(param,int.MinValue,null);
+        }
+
+        public override StateBase<TObject> Clone(TObject param, int id, StateMachine<TObject> stateMachine)
+        {
+            StateMachine<TObject> clone = new StateMachine<TObject>(param,id, stateMachine);
+            clone.EarlyUpdate(m_OnEarlyUpdate);
+            clone.Initialize(m_OnInitialize);
+            clone.Enter(m_OnEnter);
+            clone.Exit(m_OnExit);
+            clone.Update(m_OnUpdate);
+            foreach (int stateId in m_States.Keys)
+            {
+                clone.m_States[stateId] = m_States[stateId].Clone(param, stateId,clone);
+            }
+            foreach (int transitionId in m_Transitions.Keys)
+            {
+                if (!clone.m_Transitions.ContainsKey(transitionId))
+                    clone.m_Transitions[transitionId] = new List<TransitionBase<TObject>>();
+
+                foreach (TransitionBase<TObject> transition in m_Transitions[transitionId])
+                    clone.m_Transitions[transitionId].Add(transition.Clone(m_States[transition.Id]));
+            }
+            return clone;
         }
 
         public void Reset()
@@ -226,32 +271,28 @@ namespace Task.Switch.Structure.FSM
             m_Parameter = param;
             m_Transitions = new Dictionary<int, List<TransitionBase<TObject>>>();
             m_States = new Dictionary<int, StateBase<TObject>>();
-            m_States[StateMachineConst.ENTRY] = new StateBase<TObject>(StateMachineConst.ENTRY);
-            m_States[StateMachineConst.ENTRY].m_Parent = this;
-            m_States[StateMachineConst.END] = new StateBase<TObject>(StateMachineConst.END);
-            m_States[StateMachineConst.END].m_Parent = this;
+            m_States[StateMachineConst.ENTRY] = new StateBase<TObject>(StateMachineConst.ENTRY,this);
+            m_States[StateMachineConst.END] = new StateBase<TObject>(StateMachineConst.END,this);
             Reset();
         }
 
         public StateBase<TObject> State<TState>(TState id) where TState : Enum
         {
-            StateBase<TObject> state = new StateBase<TObject>(Convert.ToInt32(id));
+            StateBase<TObject> state = new StateBase<TObject>(Convert.ToInt32(id),this);
             m_States[state.Id] = state;
-            state.m_Parent = this;
             return state;
         }
 
         public StateMachine<TObject> Machine<TState>(TState id) where TState : Enum
         {
-            StateMachine<TObject> machine = new StateMachine<TObject>(m_Parameter, Convert.ToInt32(id));
+            StateMachine<TObject> machine = new StateMachine<TObject>(m_Parameter, Convert.ToInt32(id),this);
             m_States[machine.Id] = machine;
-            machine.m_Parent = this;
             return machine;
         }
 
         public StateMachine<TObject> SetDefault<TState>(TState defaultId) where TState : Enum
         {
-            AddTransition(new TransitionBase<TObject>(StateMachineConst.ENTRY, Convert.ToInt32(defaultId), (so) => true, null));
+            AddTransition(new TransitionBase<TObject>(StateMachineConst.ENTRY, Convert.ToInt32(defaultId), (so) => true, null, m_States[StateMachineConst.ENTRY]));
             return this;
         }
         public StateMachine<TObject> Build()
@@ -267,7 +308,7 @@ namespace Task.Switch.Structure.FSM
             int toStateId = Convert.ToInt32(toId);
             foreach(int stateId in m_States.Keys)
                 if(stateId == (fromStateId & stateId))
-                    AddTransition(new TransitionBase<TObject>(stateId,toStateId,valid,transfer));
+                    AddTransition(new TransitionBase<TObject>(stateId, toStateId, valid, transfer, m_States[stateId]));
             return this;
         }
         public StateMachine<TObject> Any<TState>(Func<TObject, bool> valid, TState toId, Action<TObject> transfer) where TState : Enum
@@ -275,7 +316,7 @@ namespace Task.Switch.Structure.FSM
             int toStateId = Convert.ToInt32(toId);
             foreach (int stateId in m_States.Keys)
                 if (stateId != toStateId)
-                    AddTransition(new TransitionBase<TObject>(stateId,toStateId,valid,transfer));
+                    AddTransition(new TransitionBase<TObject>(stateId,toStateId,valid,transfer, m_States[stateId]));
             return this;
         }
         internal override void OnExit(TObject param)

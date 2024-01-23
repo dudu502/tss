@@ -1,8 +1,10 @@
 using System;
 using Task.Switch.Structure.FSM;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using static MyStateObject;
+
 
 public class MyStateObject
 {
@@ -41,7 +43,7 @@ public class MyStateObject
 
     public TMPro.TMP_Text infoText;
     public Timer timer;
-    public MyStateObject(Player player,Image background, TMPro.TMP_Text infoText)
+    public MyStateObject(Player player, Image background,TMP_Text infoText)
     {
         timer = new Timer();
         this.player = player;
@@ -85,17 +87,18 @@ public class MainScene : MonoBehaviour
 {
     [SerializeField] Color dayColor;
     [SerializeField] Color nightColor;
-    [SerializeField] Player player;
-    [SerializeField] Image backgroundImage;
-    [SerializeField] TMPro.TMP_Text infoText;
 
-    StateMachine<MyStateObject> stateMachine;
-    
+    StateMachine<MyStateObject> stateMachine0;
+    [SerializeField] Player player;
+    [SerializeField] Image background;
+    [SerializeField] TMP_Text infoText;
+    MyStateObject stateObject0;
     void Start()
     {
         StateMachineDebug.Log = Debug.Log;
         StateMachineDebug.Filter = StateMachineDebug.LogFilter.Everything;
-        stateMachine = new StateMachine<MyStateObject>(new MyStateObject(player, backgroundImage, infoText))
+        stateObject0 = new MyStateObject(player, background, infoText);
+        stateMachine0 = new StateMachine<MyStateObject>(stateObject0)
         #region DEFAULT STATE
             .State(GlobalState.Default)
                 .Initialize(so => { })
@@ -195,6 +198,6 @@ public class MainScene : MonoBehaviour
 
     void Update()
     {
-        stateMachine.Update();
+        stateMachine0.Update();
     }
 }
