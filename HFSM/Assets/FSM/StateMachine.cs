@@ -313,7 +313,7 @@ namespace Task.Switch.Structure.FSM
             return this;
         }
 
-        public StateMachine<TObject> Select<TState>(Func<TObject, bool> valid, TState id, TState toId, Action<TObject> transfer) where TState : Enum
+        public StateMachine<TObject> Select<TState>(Func<TObject, bool> valid, TState id, TState toId, Action<TObject> transfer = null) where TState : Enum
         {
             int fromStateId = Convert.ToInt32(id);
             int toStateId = Convert.ToInt32(toId);
@@ -322,7 +322,7 @@ namespace Task.Switch.Structure.FSM
                     AddTransition(new TransitionBase<TObject>(stateId, toStateId, valid, transfer, m_States[stateId]));
             return this;
         }
-        public StateMachine<TObject> Any<TState>(Func<TObject, bool> valid, TState toId, Action<TObject> transfer) where TState : Enum
+        public StateMachine<TObject> Any<TState>(Func<TObject, bool> valid, TState toId, Action<TObject> transfer = null) where TState : Enum
         {
             int toStateId = Convert.ToInt32(toId);
             foreach (int stateId in m_States.Keys)
