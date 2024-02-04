@@ -345,10 +345,10 @@ namespace Task.Switch.Structure.FSM
 
         public void Update()
         {
-            if (m_Current != null && m_Current.Id != StateMachineConst.END && m_Transitions.TryGetValue(m_Current.Id, out List<TransitionBase<TObject>> translations))
+            if (m_Current != null && m_Current.Id != StateMachineConst.END && m_Transitions.TryGetValue(m_Current.Id, out List<TransitionBase<TObject>> transitions))
             {
                 m_Current.OnEarlyUpdate(m_Parameter);
-                foreach (TransitionBase<TObject> transition in translations)
+                foreach (TransitionBase<TObject> transition in transitions)
                 {
                     if (transition.OnValidate(m_Parameter))
                     {
