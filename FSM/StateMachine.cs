@@ -3,14 +3,31 @@ using System.Collections.Generic;
 
 namespace Task.Switch.Structure.FSM
 {
+    public class EventArgs
+    {
+        public string EventType;
+        public object EventParameter;
+
+        public EventArgs(string eventType, object eventParameter)
+        {
+            EventType = eventType;
+            EventParameter = eventParameter;
+        }
+
+        public T ParameterAs<T>()
+        {
+            return (T)EventParameter;
+        }
+    }
     public interface IStateMachine<TObject>
     {
         void SetParameter(TObject param);
         TObject GetParameter();
+        Queue<EventArgs> GetEventArgs();
         void Reset();
         IStateDeclarable<TObject> State<TState>(TState id);
         IStateMachine<TObject> SetDefault<TState>(TState id);
-        void Tick();
+        void Update();
         IStateMachine<TObject> Build();
         IStateMachine<TObject> Any<TState>(Func<TObject, bool> valid, TState toId, Action<TObject> transfer);
         IStateMachine<TObject> Select<TState>(Func<TObject,bool> valid, TState id,TState toId, Action<TObject> transfer);
@@ -170,8 +187,10 @@ namespace Task.Switch.Structure.FSM
         private Dictionary<int, State<TObject>> m_States;
         private Dictionary<int, List<Transition<TObject>>> m_Transitions;
         private Stack<StackState> m_StackBuilder;
+        private Queue<EventArgs> m_EventArgs;
         public StateMachine(TObject param)
         {
+            m_EventArgs = new Queue<EventArgs>();
             m_States = new Dictionary<int, State<TObject>>();
             m_Transitions = new Dictionary<int, List<Transition<TObject>>>();
             m_Parameter = param;
@@ -193,7 +212,7 @@ namespace Task.Switch.Structure.FSM
         {
             return new StateMachine<TObject>(((StateMachine<TObject>)original).m_States, ((StateMachine<TObject>)original).m_Transitions ,param);
         }
-
+        public Queue<EventArgs> GetEventArgs() { return m_EventArgs; }
         public void SetParameter(TObject param) { m_Parameter = param; }
         public TObject GetParameter() { return m_Parameter; }
         public void Reset() { m_Current = m_States[ENTRY]; }
@@ -209,6 +228,7 @@ namespace Task.Switch.Structure.FSM
                 state.OnInitialize(m_Parameter);
             return this;
         }
+   
 
         private State<TObject> AddState(int id)
         {
@@ -356,7 +376,7 @@ namespace Task.Switch.Structure.FSM
             return this;
         }
 
-        void IStateMachine<TObject>.Tick()
+        void IStateMachine<TObject>.Update()
         {
             if (m_Current != null && m_Current.Id != END && m_Transitions.TryGetValue(m_Current.Id,out List<Transition<TObject>> transitions))
             {
@@ -375,7 +395,7 @@ namespace Task.Switch.Structure.FSM
                         else
                         {
                             throw new Exception("Use State() to define a State.");
-                        }                 
+                        }
                         return;
                     }
                 }

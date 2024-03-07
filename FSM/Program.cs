@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace Task.Switch.Structure.FSM
@@ -7,61 +8,95 @@ namespace Task.Switch.Structure.FSM
     {
         enum State
         {
-            Idle,
-            Run,
+            Normal,
+            Stun,
         }
 
         class StateObject
         {
-            public const int MAX_PHYSICAL_STRENGTH = 50;
-            public int physical_strength = 25;
-            public string name;
-            public StateObject(string n,int value)
+            public Queue<EventArgs> EventArgs;
+            public int hp = 100;
+            public int position;
+            public StateObject()
             {
-                name = n;
-                physical_strength = value;
+
             }
+
             public void Log()
             {
-                Console.WriteLine(name + "Current physical_strength " + physical_strength);
+                Console.WriteLine(ToString());
             }
-            public void Log(string value)
+            public override string ToString()
             {
-                Console.WriteLine(value);
+                return $"HP:{hp} Position:{position} ";
+            }
+            public void OnHit(int value)
+            {
+                hp -= value;
+                EventArgs.Enqueue(new FSM.EventArgs("hit",value));
+            }
+            public void OnStun()
+            {
+                hp -= 10;
+                EventArgs.Enqueue(new FSM.EventArgs("stun", null));
+            }
+
+            public void OnReset()
+            {
+                EventArgs.Enqueue(new FSM.EventArgs("reset", null));
             }
         }
 
         static void Main(string[] args)
         {
-            IStateMachine<StateObject> machine = new StateMachine<StateObject>(new StateObject("TOM ", 0))
-                .State(State.Idle)
-                    .Initialize(so => so.Log("Init Idle"))
-                    .Enter(so => so.Log("Enter Idle"))
-                    .Update(so => { so.physical_strength++; so.Log(); })
-                    .Exit(so => so.Log("Exit Idle"))
-                    .Transition(so => so.physical_strength >= StateObject.MAX_PHYSICAL_STRENGTH)
-                        .Transfer(so => so.Log("Transfer Idle"))
-                        .To(State.Run)
-                    .End()
+            IStateMachine<StateObject> machine = new StateMachine<StateObject>(new StateObject())
+                .State(State.Normal)
+                    .Update(so=> { so.position++; so.Log(); })
+                    .Transition(so => { 
+                        while(so.EventArgs.TryDequeue(out EventArgs e))
+                            if (e.EventType == "stun")
+                                return true;
+                        return false;
+                    }).To(State.Stun).End()
                 .End()
-                .State(State.Run)
-                    .Initialize(so => so.Log("Init Run"))
-                    .Enter(so => so.Log("Enter Run"))
-                    .Update(so => { so.physical_strength--; so.Log(); })
-                    .Exit(so => so.Log("Exit Run"))
-                    .Transition(so => so.physical_strength <= 0)
-                        .Transfer(so => so.Log("Transfer Run"))
-                        .To(State.Idle)
-                    .End()
+                .State(State.Stun)
+                    .Update(so=>so.Log())
+                    .Transition(so =>
+                    {
+                        while(so.EventArgs.TryDequeue(out EventArgs e))
+                            if (e.EventType == "reset")
+                                return true;
+                        return false;
+                    }).To(State.Normal).End()
                 .End()
-                .SetDefault(State.Idle)
+                .SetDefault(State.Normal)
                 .Build();
+            machine.GetParameter().EventArgs = machine.GetEventArgs();
+
             bool running = true;
             
-            ThreadPool.QueueUserWorkItem(_ => { var key = Console.ReadKey(); machine.SetParameter(new StateObject("TTTT ", 0)); machine.Reset(); });
+            ThreadPool.QueueUserWorkItem(_ =>
+            {
+                while (true)
+                {
+                    var key = Console.ReadLine();
+                    if (key == "d")
+                    {
+                        machine.GetParameter().OnHit(1);
+                    }
+                    else if (key == "s")
+                    {
+                        machine.GetParameter().OnStun();
+                    }
+                    else if(key == "n")
+                    {
+                        machine.GetParameter().OnReset();
+                    }
+                }
+            });
             while (running)
             {
-                machine.Tick();
+                machine.Update();
 
                 Thread.Sleep(50);
             }
