@@ -4,6 +4,22 @@ using UnityEngine;
 
 namespace Task.Switch.Structure.FSM
 {
+    public class EventArgs
+    {
+        public string EventType;
+        public object EventParameter;
+
+        public EventArgs(string eventType, object eventParameter)
+        {
+            EventType = eventType;
+            EventParameter = eventParameter;
+        }
+
+        public T ParameterAs<T>()
+        {
+            return (T)EventParameter;
+        }
+    }
     public class StateMachineDebug
     {
         public enum LogFilter
@@ -70,6 +86,11 @@ namespace Task.Switch.Structure.FSM
             m_Transfer = transfer;
             return this;
         }
+        public TransitionBase<TObject> Return()
+        {
+            ToId = -1;
+            return this;
+        }
         public TransitionBase<TObject> To<TState>(TState toId) where TState : Enum
         {
             ToId = Convert.ToInt32(toId);
@@ -98,6 +119,7 @@ namespace Task.Switch.Structure.FSM
     {
         private StateMachine<TObject> m_Parent;
         public int Id { get; private set; }
+        public int PreviousId;
         protected Action<TObject> m_OnInitialize;
         protected Action<TObject> m_OnEnter;
         protected Action<TObject> m_OnUpdate;
@@ -214,6 +236,7 @@ namespace Task.Switch.Structure.FSM
         Dictionary<int, List<TransitionBase<TObject>>> m_Transitions;
         StateBase<TObject> m_Current;
         TObject m_Parameter;
+        List<EventArgs> m_EventArgs;
         
         public StateMachine(TObject param, int id, StateMachine<TObject> parent) : base(id,parent)
         {
@@ -272,6 +295,11 @@ namespace Task.Switch.Structure.FSM
             m_Parameter = param;
         }
 
+        public List<EventArgs> GetEventArgs()
+        {
+            return m_EventArgs;
+        }
+
         public TObject GetParameter()
         {
             return m_Parameter;
@@ -280,6 +308,7 @@ namespace Task.Switch.Structure.FSM
         private void _Initialize(TObject param)
         {
             SetParameter(param);
+            m_EventArgs = new List<EventArgs>();
             m_Transitions = new Dictionary<int, List<TransitionBase<TObject>>>();
             m_States = new Dictionary<int, StateBase<TObject>>();
             m_States[StateMachineConst.ENTRY] = new StateBase<TObject>(StateMachineConst.ENTRY,this);
@@ -352,11 +381,19 @@ namespace Task.Switch.Structure.FSM
                 {
                     if (transition.OnValidate(m_Parameter))
                     {
+                        m_EventArgs.Clear();
+
                         m_Current.OnExit(m_Parameter);
+
+                        int toId = transition.ToId;
+                        if (toId == -1)
+                            toId = m_Current.PreviousId;
 
                         if (m_States.TryGetValue(transition.ToId, out StateBase<TObject> next))
                         {
+                            int previousId = m_Current.Id;
                             m_Current = next;
+                            m_Current.PreviousId = previousId;
                             transition.OnTransfer(m_Parameter);
                             m_Current.OnEnter(m_Parameter);
                         }
