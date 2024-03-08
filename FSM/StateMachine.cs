@@ -23,7 +23,7 @@ namespace Task.Switch.Structure.FSM
     {
         void SetParameter(TObject param);
         TObject GetParameter();
-        Queue<EventArgs> GetEventArgs();
+        List<EventArgs> GetEventArgs();
         void Reset();
         IStateDeclarable<TObject> State<TState>(TState id);
         IStateMachine<TObject> SetDefault<TState>(TState id);
@@ -48,6 +48,7 @@ namespace Task.Switch.Structure.FSM
     {
         ITransitionDeclarable<TObject> Transfer(Action<TObject> onTransfer);
         ITransitionDeclarable<TObject> To<TState>(TState id);
+        ITransitionDeclarable<TObject> Return();
         ITransitionDeclarable<TObject> ToEnd();
         ITransitionDeclarable<TObject> ToEntry();
         IStateDeclarable<TObject> End();
@@ -79,6 +80,8 @@ namespace Task.Switch.Structure.FSM
             m_Transfer = transfer;
         }
 
+   
+
         public Action<TObject> GetTransfer()
         {
             return m_Transfer;
@@ -101,6 +104,7 @@ namespace Task.Switch.Structure.FSM
 
     public class State<TObject>
     {
+        public int PreviousId = -1;
         public int Id { get; private set; }
         private Action<TObject> m_OnInitialize;
         private Action<TObject> m_OnUpdate;
@@ -187,10 +191,10 @@ namespace Task.Switch.Structure.FSM
         private Dictionary<int, State<TObject>> m_States;
         private Dictionary<int, List<Transition<TObject>>> m_Transitions;
         private Stack<StackState> m_StackBuilder;
-        private Queue<EventArgs> m_EventArgs;
+        private List<EventArgs> m_EventArgs;
         public StateMachine(TObject param)
         {
-            m_EventArgs = new Queue<EventArgs>();
+            m_EventArgs = new List<EventArgs>();
             m_States = new Dictionary<int, State<TObject>>();
             m_Transitions = new Dictionary<int, List<Transition<TObject>>>();
             m_Parameter = param;
@@ -212,7 +216,7 @@ namespace Task.Switch.Structure.FSM
         {
             return new StateMachine<TObject>(((StateMachine<TObject>)original).m_States, ((StateMachine<TObject>)original).m_Transitions ,param);
         }
-        public Queue<EventArgs> GetEventArgs() { return m_EventArgs; }
+        public List<EventArgs> GetEventArgs() { return m_EventArgs; }
         public void SetParameter(TObject param) { m_Parameter = param; }
         public TObject GetParameter() { return m_Parameter; }
         public void Reset() { m_Current = m_States[ENTRY]; }
@@ -324,7 +328,13 @@ namespace Task.Switch.Structure.FSM
                 state.RawAs<Transition<TObject>>().ToId = Convert.ToInt32(id);
             return this;
         }
-
+        ITransitionDeclarable<TObject> ITransitionDeclarable<TObject>.Return()
+        {
+            StackState state = m_StackBuilder.Peek();
+            if (state.Type == StackState.TRANSITION_TYPE)
+                state.RawAs<Transition<TObject>>().ToId = -1;
+            return this;
+        }
         ITransitionDeclarable<TObject> ITransitionDeclarable<TObject>.ToEnd()
         {
             StackState state = m_StackBuilder.Peek();
@@ -385,16 +395,25 @@ namespace Task.Switch.Structure.FSM
                 {
                     if (transition.OnValidate(m_Parameter))
                     {
+                        m_EventArgs.Clear();
                         m_Current.OnExit(m_Parameter);
-                        if (m_States.ContainsKey(transition.ToId))
+
+                        // Return type: If transition's toId == -1, it's toId will redirect to the previous state into the existing state. 
+                        int toId = transition.ToId;
+                        if (toId == -1)
+                            toId = m_Current.PreviousId;
+
+                        if (m_States.ContainsKey(toId))
                         {
-                            m_Current = m_States[transition.ToId];
+                            int previousId = m_Current.Id;
+                            m_Current = m_States[toId];
+                            m_Current.PreviousId = previousId;
                             transition.OnTransfer(m_Parameter);
                             m_Current.OnEnter(m_Parameter);
                         }
                         else
                         {
-                            throw new Exception("Use State() to define a State.");
+                            throw new Exception("Use State() to define a State." + toId);
                         }
                         return;
                     }
