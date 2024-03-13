@@ -62,20 +62,33 @@ namespace Task.Switch.Structure.FSM
             {
                 return $"HP:{hp} Position:{position} ";
             }
+            public void OnAdd()
+            {
+                hp++;
+            }
             public void OnHit(int value)
             {
                 hp -= value;
-                EventArgs.Add(new FSM.EventArgs("hit",value));
+                EventArgs.Add(new EventArgs("hit",value));
             }
             public void OnStun()
             {
                 hp -= 10;
-                EventArgs.Add(new FSM.EventArgs("stun", null));
+                EventArgs.Add(new EventArgs("stun", null));
             }
 
             public void OnReset()
             {
-                EventArgs.Add(new FSM.EventArgs("reset", null));
+                EventArgs.Add(new EventArgs("reset", null));
+            }
+            public bool PollEvent(string name)
+            {
+                foreach(var evt in EventArgs)
+                {
+                    if (evt.EventType == name)
+                        return true;
+                }
+                return false;
             }
         }
 
@@ -87,25 +100,13 @@ namespace Task.Switch.Structure.FSM
                     {   
                         so.position++; so.Log();
                     })
-                    .Transition(so => 
-                    { 
-                        foreach(var evt in so.EventArgs)
-                            if (evt.EventType == "stun")
-                                return true;
-                        return false;
-                    }).To(State.Stun).End()
+                    .Transition(so => EventArgs.PollEvent(so.EventArgs,"stun")).To(State.Stun).End()
                 .End()
                 .State(State.Stun)
                     .Enter(so=>so.timer.Reset())
                     .Update(so=>so.Log())
-                    .Transition(so =>
-                    {
-                        foreach (var evt in so.EventArgs)
-                            if (evt.EventType == "reset")
-                                return true;
-                        return false;
-                    }).To(State.Normal).End()
-                    .Transition(so=>so.timer>2).Return().End()
+                    .Transition(so=> EventArgs.PollEvent(so.EventArgs,"reset")).To(State.Normal).End()
+                    .Transition(so=>so.timer>5).Return().End()
                 .End()
                 .SetDefault(State.Normal)
                 .Build();
@@ -129,6 +130,10 @@ namespace Task.Switch.Structure.FSM
                     else if(key == "n")
                     {
                         machine.GetParameter().OnReset();
+                    }
+                    else if(key == "a")
+                    {
+                        machine.GetParameter().OnAdd();
                     }
                 }
             });

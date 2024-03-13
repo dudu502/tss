@@ -381,15 +381,11 @@ namespace Task.Switch.Structure.FSM
                 {
                     if (transition.OnValidate(m_Parameter))
                     {
-                        m_EventArgs.Clear();
-
                         m_Current.OnExit(m_Parameter);
 
-                        int toId = transition.ToId;
-                        if (toId == -1)
-                            toId = m_Current.PreviousId;
+                        int toId = transition.ToId == -1 ? m_Current.PreviousId : transition.ToId;
 
-                        if (m_States.TryGetValue(transition.ToId, out StateBase<TObject> next))
+                        if (m_States.TryGetValue(toId, out StateBase<TObject> next))
                         {
                             int previousId = m_Current.Id;
                             m_Current = next;
@@ -399,12 +395,13 @@ namespace Task.Switch.Structure.FSM
                         }
                         else
                         {
-                            throw new Exception("Use State(TState) or Machine(TState) to define a State or a StateMachine.");
+                            throw new Exception("Use State(TState) or Machine(TState) to define a State or a StateMachine." + toId);
                         }
                         return;
                     }
                 }
                 m_Current.OnUpdate(m_Parameter);
+                m_EventArgs.Clear();
             }
         }
     }

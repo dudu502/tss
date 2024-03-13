@@ -18,6 +18,20 @@ namespace Task.Switch.Structure.FSM
         {
             return (T)EventParameter;
         }
+
+        public static EventArgs RetriveEvent(List<EventArgs> evts, string evtType)
+        {
+            foreach (EventArgs e in evts)
+            {
+                if (e.EventType == evtType)
+                    return e;
+            }
+            return null;
+        }
+        public static bool PollEvent(List<EventArgs> evts, string evtType)
+        {
+            return RetriveEvent(evts, evtType) != null;
+        }
     }
     public interface IStateMachine<TObject>
     {
@@ -232,7 +246,8 @@ namespace Task.Switch.Structure.FSM
                 state.OnInitialize(m_Parameter);
             return this;
         }
-   
+
+
 
         private State<TObject> AddState(int id)
         {
@@ -395,18 +410,15 @@ namespace Task.Switch.Structure.FSM
                 {
                     if (transition.OnValidate(m_Parameter))
                     {
-                        m_EventArgs.Clear();
                         m_Current.OnExit(m_Parameter);
 
                         // Return type: If transition's toId == -1, it's toId will redirect to the previous state into the existing state. 
-                        int toId = transition.ToId;
-                        if (toId == -1)
-                            toId = m_Current.PreviousId;
+                        int toId = transition.ToId == -1 ? m_Current.PreviousId : transition.ToId;
 
-                        if (m_States.ContainsKey(toId))
+                        if (m_States.TryGetValue(toId,out State<TObject> next))
                         {
                             int previousId = m_Current.Id;
-                            m_Current = m_States[toId];
+                            m_Current = next;
                             m_Current.PreviousId = previousId;
                             transition.OnTransfer(m_Parameter);
                             m_Current.OnEnter(m_Parameter);
@@ -419,6 +431,7 @@ namespace Task.Switch.Structure.FSM
                     }
                 }
                 m_Current.OnUpdate(m_Parameter);
+                m_EventArgs.Clear();
             }
         }
     }
