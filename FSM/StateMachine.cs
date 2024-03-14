@@ -19,18 +19,21 @@ namespace Task.Switch.Structure.FSM
             return (T)EventParameter;
         }
 
-        public static EventArgs RetriveEvent(List<EventArgs> evts, string evtType)
+        public override string ToString()
+        {
+            return $"EventType:{EventType} Parameter:{EventParameter.ToString()}";
+        }
+
+        public static EventArgs Retrieve(List<EventArgs> evts, string evtType)
         {
             foreach (EventArgs e in evts)
-            {
                 if (e.EventType == evtType)
                     return e;
-            }
             return null;
         }
-        public static bool PollEvent(List<EventArgs> evts, string evtType)
+        public static bool Poll(List<EventArgs> evts, string evtType)
         {
-            return RetriveEvent(evts, evtType) != null;
+            return Retrieve(evts, evtType) != null;
         }
     }
     public interface IStateMachine<TObject>
@@ -93,8 +96,6 @@ namespace Task.Switch.Structure.FSM
         {
             m_Transfer = transfer;
         }
-
-   
 
         public Action<TObject> GetTransfer()
         {

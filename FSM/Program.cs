@@ -100,12 +100,12 @@ namespace Task.Switch.Structure.FSM
                     {   
                         so.position++; so.Log();
                     })
-                    .Transition(so => EventArgs.PollEvent(so.EventArgs,"stun")).To(State.Stun).End()
+                    .Transition(so => EventArgs.Poll(so.EventArgs,"stun")).To(State.Stun).End()
                 .End()
                 .State(State.Stun)
                     .Enter(so=>so.timer.Reset())
                     .Update(so=>so.Log())
-                    .Transition(so=> EventArgs.PollEvent(so.EventArgs,"reset")).To(State.Normal).End()
+                    .Transition(so=> EventArgs.Poll(so.EventArgs,"reset")).To(State.Normal).End()
                     .Transition(so=>so.timer>5).Return().End()
                 .End()
                 .SetDefault(State.Normal)

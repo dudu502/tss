@@ -19,6 +19,24 @@ namespace Task.Switch.Structure.FSM
         {
             return (T)EventParameter;
         }
+
+        public override string ToString()
+        {
+            return $"EventType:{EventType} Parameter:{EventParameter.ToString()}";
+        }
+        public static EventArgs Retrieve(List<EventArgs> evts, string evtType)
+        {
+            foreach (EventArgs e in evts)
+            {
+                if (e.EventType == evtType)
+                    return e;
+            }
+            return null;
+        }
+        public static bool Poll(List<EventArgs> evts, string evtType)
+        {
+            return Retrieve(evts, evtType) != null;
+        }
     }
     public class StateMachineDebug
     {
