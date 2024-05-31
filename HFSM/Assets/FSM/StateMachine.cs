@@ -353,6 +353,7 @@ namespace Task.Switch.Structure.FSM
             AddTransition(new TransitionBase<TObject>(StateMachineConst.ENTRY, Convert.ToInt32(defaultId), (so) => true, null, m_States[StateMachineConst.ENTRY]));
             return this;
         }
+
         public StateMachine<TObject> Build()
         {
             foreach (StateBase<TObject> state in m_States.Values)
@@ -364,19 +365,21 @@ namespace Task.Switch.Structure.FSM
         {
             int fromStateId = Convert.ToInt32(id);
             int toStateId = Convert.ToInt32(toId);
-            foreach(int stateId in m_States.Keys)
-                if(stateId == (fromStateId & stateId))
+            foreach (int stateId in m_States.Keys)
+                if (stateId == (fromStateId & stateId))
                     AddTransition(new TransitionBase<TObject>(stateId, toStateId, valid, transfer, m_States[stateId]));
             return this;
         }
+
         public StateMachine<TObject> Any<TState>(Func<TObject, bool> valid, TState toId, Action<TObject> transfer = null) where TState : Enum
         {
             int toStateId = Convert.ToInt32(toId);
             foreach (int stateId in m_States.Keys)
-                if (stateId != toStateId)
-                    AddTransition(new TransitionBase<TObject>(stateId,toStateId,valid,transfer, m_States[stateId]));
+                if (stateId != StateMachineConst.ENTRY && stateId != StateMachineConst.END && stateId != toStateId)
+                    AddTransition(new TransitionBase<TObject>(stateId, toStateId, valid, transfer, m_States[stateId]));
             return this;
         }
+
         internal override void OnExit(TObject param)
         {
             m_Current.OnExit(m_Parameter);
