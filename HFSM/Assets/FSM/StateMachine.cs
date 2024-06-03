@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace Task.Switch.Structure.FSM
 {
@@ -24,41 +23,36 @@ namespace Task.Switch.Structure.FSM
         {
             return $"EventType:{EventType} Parameter:{EventParameter.ToString()}";
         }
-        public static EventArgs Retrieve(List<EventArgs> evts, string evtType)
+
+        public static EventArgs Take(List<EventArgs> evts, string evtType, bool needRemoveEvent = true)
         {
-            foreach (EventArgs e in evts)
+            for (int i = evts.Count - 1; i > -1; i--)
             {
-                if (e.EventType == evtType)
-                    return e;
-            }
-            return null;
-        }
-        public static EventArgs TakeAway(List<EventArgs> evts, string evtType)
-        {
-            EventArgs evt = null;
-            foreach (EventArgs e in evts)
-            {
-                if (e.EventType == evtType)
+                if (evts[i].EventType == evtType)
                 {
-                    evt = e;
-                    break;
+                    if (needRemoveEvent)
+                        evts.RemoveAt(i);
+                    return evts[i];
                 }
             }
-            if (evt != null)
-                evts.Remove(evt);
-            return evt;
+            return null;
         }
 
         public static bool Poll(List<EventArgs> evts, string evtType, bool needRemoveEvent = true)
         {
-            var evt = Retrieve(evts, evtType);
-            if (evt == null)
-                return false;
-            if (needRemoveEvent)
-                evts.Remove(evt);
-            return true;
+            for (int i = evts.Count - 1; i > -1; i--)
+            {
+                if (evts[i].EventType == evtType)
+                {
+                    if (needRemoveEvent)
+                        evts.RemoveAt(i);
+                    return true;
+                }
+            }
+            return false;
         }
     }
+
     public class StateMachineDebug
     {
         public enum LogFilter
