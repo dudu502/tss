@@ -33,9 +33,30 @@ namespace Task.Switch.Structure.FSM
             }
             return null;
         }
-        public static bool Poll(List<EventArgs> evts, string evtType)
+        public static EventArgs TakeAway(List<EventArgs> evts, string evtType)
         {
-            return Retrieve(evts, evtType) != null;
+            EventArgs evt = null;
+            foreach (EventArgs e in evts)
+            {
+                if (e.EventType == evtType)
+                {
+                    evt = e;
+                    break;
+                }
+            }
+            if (evt != null)
+                evts.Remove(evt);
+            return evt;
+        }
+
+        public static bool Poll(List<EventArgs> evts, string evtType, bool needRemoveEvent = true)
+        {
+            var evt = Retrieve(evts, evtType);
+            if (evt == null)
+                return false;
+            if (needRemoveEvent)
+                evts.Remove(evt);
+            return true;
         }
     }
     public class StateMachineDebug
@@ -254,7 +275,6 @@ namespace Task.Switch.Structure.FSM
         Dictionary<int, List<TransitionBase<TObject>>> m_Transitions;
         StateBase<TObject> m_Current;
         TObject m_Parameter;
-        List<EventArgs> m_EventArgs;
         
         public StateMachine(TObject param, int id, StateMachine<TObject> parent) : base(id,parent)
         {
@@ -313,11 +333,6 @@ namespace Task.Switch.Structure.FSM
             m_Parameter = param;
         }
 
-        public List<EventArgs> GetEventArgs()
-        {
-            return m_EventArgs;
-        }
-
         public TObject GetParameter()
         {
             return m_Parameter;
@@ -326,7 +341,6 @@ namespace Task.Switch.Structure.FSM
         private void _Initialize(TObject param)
         {
             SetParameter(param);
-            m_EventArgs = new List<EventArgs>();
             m_Transitions = new Dictionary<int, List<TransitionBase<TObject>>>();
             m_States = new Dictionary<int, StateBase<TObject>>();
             m_States[StateMachineConst.ENTRY] = new StateBase<TObject>(StateMachineConst.ENTRY,this);
@@ -392,7 +406,12 @@ namespace Task.Switch.Structure.FSM
             base.OnUpdate(param);
             Update();
         }
-
+        public int GetCurrentId()
+        {
+            if (m_Current == null)
+                return StateMachineConst.END;
+            return m_Current.Id;
+        }
         public void Update()
         {
             if (m_Current != null && m_Current.Id != StateMachineConst.END && m_Transitions.TryGetValue(m_Current.Id, out List<TransitionBase<TObject>> transitions))
@@ -422,7 +441,6 @@ namespace Task.Switch.Structure.FSM
                     }
                 }
                 m_Current.OnUpdate(m_Parameter);
-                m_EventArgs.Clear();
             }
         }
     }
