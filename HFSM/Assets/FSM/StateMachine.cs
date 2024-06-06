@@ -3,12 +3,12 @@ using System.Collections.Generic;
 
 namespace Task.Switch.Structure.FSM
 {
-    public class EventArgs
+    public class FsmEventArgs
     {
         public string EventType;
         public object EventParameter;
 
-        public EventArgs(string eventType, object eventParameter)
+        public FsmEventArgs(string eventType, object eventParameter)
         {
             EventType = eventType;
             EventParameter = eventParameter;
@@ -24,21 +24,22 @@ namespace Task.Switch.Structure.FSM
             return $"EventType:{EventType} Parameter:{EventParameter.ToString()}";
         }
 
-        public static EventArgs Take(List<EventArgs> evts, string evtType, bool needRemoveEvent = true)
+        public static FsmEventArgs Take(List<FsmEventArgs> evts, string evtType, bool needRemoveEvent = true)
         {
             for (int i = evts.Count - 1; i > -1; i--)
             {
                 if (evts[i].EventType == evtType)
                 {
+                    var evt = evts[i];
                     if (needRemoveEvent)
                         evts.RemoveAt(i);
-                    return evts[i];
+                    return evt;
                 }
             }
             return null;
         }
 
-        public static bool Poll(List<EventArgs> evts, string evtType, bool needRemoveEvent = true)
+        public static bool Poll(List<FsmEventArgs> evts, string evtType, bool needRemoveEvent = true)
         {
             for (int i = evts.Count - 1; i > -1; i--)
             {
