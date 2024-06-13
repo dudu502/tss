@@ -74,7 +74,7 @@ namespace Task.Switch.Structure.FSM
 
     public class TransitionBase<TObject>
     {
-        private StateBase<TObject> m_ParentState;
+        private StateBase<TObject> m_State;
         public int Id { get; private set; }
         public int ToId { get; set; }
         private Func<TObject, bool> m_Validate;
@@ -82,7 +82,7 @@ namespace Task.Switch.Structure.FSM
 
         public TransitionBase(int id, int toId, Func<TObject, bool> valid, Action<TObject> transfer,StateBase<TObject> stateBase)
         {
-            m_ParentState = stateBase;
+            m_State = stateBase;
             Id = id;
             ToId = toId;
             m_Validate = valid;
@@ -145,7 +145,7 @@ namespace Task.Switch.Structure.FSM
 
         public StateBase<TObject> End()
         {
-            return m_ParentState;
+            return m_State;
         }
     }
 
