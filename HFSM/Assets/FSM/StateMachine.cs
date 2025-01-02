@@ -5,8 +5,9 @@ namespace Task.Switch.Structure.FSM
 {
     public class FsmEventArgs
     {
-        public string EventType;
-        public object EventParameter;
+        public string EventType { private set; get; }
+        public object EventParameter { private set; get; }
+        public bool HasUsed { private set; get; }
 
         public FsmEventArgs(string eventType, object eventParameter)
         {
@@ -24,29 +25,29 @@ namespace Task.Switch.Structure.FSM
             return $"EventType:{EventType} Parameter:{EventParameter.ToString()}";
         }
 
-        public static FsmEventArgs Take(List<FsmEventArgs> evts, string evtType, bool needRemoveEvent = true)
+        public static void ClearUsed(List<FsmEventArgs> evts)
         {
-            for (int i = evts.Count - 1; i > -1; i--)
+            for (int i = evts.Count - 1; i > -1; --i)
             {
-                if (evts[i].EventType == evtType)
+                if (evts[i].HasUsed)
                 {
-                    var evt = evts[i];
-                    if (needRemoveEvent)
-                        evts.RemoveAt(i);
-                    return evt;
+                    evts.RemoveAt(i);
                 }
             }
-            return null;
         }
-
-        public static bool Poll(List<FsmEventArgs> evts, string evtType, bool needRemoveEvent = true)
+        public static void Clear(List<FsmEventArgs> evts)
         {
-            for (int i = evts.Count - 1; i > -1; i--)
+            evts.Clear();
+        }
+        public static bool Poll(List<FsmEventArgs> evts, string evtType, out FsmEventArgs result)
+        {
+            result = null;
+            foreach (FsmEventArgs evt in evts)
             {
-                if (evts[i].EventType == evtType)
+                if (evt.EventType == evtType)
                 {
-                    if (needRemoveEvent)
-                        evts.RemoveAt(i);
+                    evt.HasUsed = true;
+                    result = evt;
                     return true;
                 }
             }

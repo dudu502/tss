@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Task.Switch.Structure.FSM;
 using TMPro;
 using UnityEngine;
@@ -93,6 +94,7 @@ public class MainScene : MonoBehaviour
     [SerializeField] Image background;
     [SerializeField] TMP_Text infoText;
     MyStateObject stateObject0;
+
     void Start()
     {
         StateMachineDebug.Log = Debug.Log;
