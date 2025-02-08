@@ -202,16 +202,7 @@ namespace Task.Switch.Structure.FSM
             Id = id;
             m_Parent = stateMachine;
         }
-        public virtual StateBase<TObject> Clone(TObject param,int id, StateMachine<TObject> stateMachine)
-        {
-            StateBase<TObject> clone = new StateBase<TObject>(id, stateMachine);
-            clone.EarlyUpdate(m_OnEarlyUpdate);
-            clone.Initialize(m_OnInitialize);
-            clone.Enter(m_OnEnter);
-            clone.Exit(m_OnExit);
-            clone.Update(m_OnUpdate);
-            return clone;
-        }
+
         public TransitionBase<TObject> Transition(Func<TObject, bool> valid)
         {
             TransitionBase<TObject> transition = new TransitionBase<TObject>(Id, 0, valid, null,this);
