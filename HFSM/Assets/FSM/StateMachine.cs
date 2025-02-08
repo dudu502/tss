@@ -3,55 +3,19 @@ using System.Collections.Generic;
 
 namespace Task.Switch.Structure.FSM
 {
-    public class FsmEventArgs
+    public class FsmEvent<E,T>where E:Enum
     {
-        public string EventType { private set; get; }
-        public object EventParameter { private set; get; }
-        public bool HasUsed { private set; get; }
-
-        public FsmEventArgs(string eventType, object eventParameter)
+        public E EventType { set; get; }
+        public T Data { set; get; }
+        public FsmEvent(E evtType,T data)
         {
-            EventType = eventType;
-            EventParameter = eventParameter;
-        }
-
-        public T ParameterAs<T>()
-        {
-            return (T)EventParameter;
+            EventType = evtType;
+            Data = data;
         }
 
         public override string ToString()
         {
-            return $"EventType:{EventType} Parameter:{EventParameter.ToString()}";
-        }
-
-        public static void ClearUsed(List<FsmEventArgs> evts)
-        {
-            for (int i = evts.Count - 1; i > -1; --i)
-            {
-                if (evts[i].HasUsed)
-                {
-                    evts.RemoveAt(i);
-                }
-            }
-        }
-        public static void Clear(List<FsmEventArgs> evts)
-        {
-            evts.Clear();
-        }
-        public static bool Poll(List<FsmEventArgs> evts, string evtType, out FsmEventArgs result)
-        {
-            result = null;
-            foreach (FsmEventArgs evt in evts)
-            {
-                if (evt.EventType == evtType)
-                {
-                    evt.HasUsed = true;
-                    result = evt;
-                    return true;
-                }
-            }
-            return false;
+            return $"[{EventType}] {Data.ToString()}";
         }
     }
 
@@ -280,34 +244,6 @@ namespace Task.Switch.Structure.FSM
         public StateMachine(TObject param) : base(int.MinValue,null)
         {
             _Initialize(param);
-        }
-
-        public static StateMachine<TObject> Clone(TObject param, StateMachine<TObject> stateMachine)
-        {
-            return (StateMachine<TObject>)stateMachine.Clone(param,int.MinValue,null);
-        }
-
-        public override StateBase<TObject> Clone(TObject param, int id, StateMachine<TObject> stateMachine)
-        {
-            StateMachine<TObject> clone = new StateMachine<TObject>(param,id, stateMachine);
-            clone.EarlyUpdate(m_OnEarlyUpdate);
-            clone.Initialize(m_OnInitialize);
-            clone.Enter(m_OnEnter);
-            clone.Exit(m_OnExit);
-            clone.Update(m_OnUpdate);
-            foreach (int stateId in m_States.Keys)
-            {
-                clone.m_States[stateId] = m_States[stateId].Clone(param, stateId,clone);
-            }
-            foreach (int transitionId in m_Transitions.Keys)
-            {
-                if (!clone.m_Transitions.ContainsKey(transitionId))
-                    clone.m_Transitions[transitionId] = new List<TransitionBase<TObject>>();
-
-                foreach (TransitionBase<TObject> transition in m_Transitions[transitionId])
-                    clone.m_Transitions[transitionId].Add(transition.Clone(m_States[transition.Id]));
-            }
-            return clone;
         }
 
         public void Reset()
