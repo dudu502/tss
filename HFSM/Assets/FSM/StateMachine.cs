@@ -3,11 +3,11 @@ using System.Collections.Generic;
 
 namespace Task.Switch.Structure.FSM
 {
-    public class FsmEvent<E,T>where E:Enum
+    public class FsmEvent<E, T> where E : Enum
     {
         public E EventType { set; get; }
         public T Data { set; get; }
-        public FsmEvent(E evtType,T data)
+        public FsmEvent(E evtType, T data)
         {
             EventType = evtType;
             Data = data;
@@ -45,19 +45,13 @@ namespace Task.Switch.Structure.FSM
         private Func<TObject, bool> m_Validate;
         private Action<TObject> m_Transfer;
 
-        public TransitionBase(int id, int toId, Func<TObject, bool> valid, Action<TObject> transfer,StateBase<TObject> stateBase)
+        public TransitionBase(int id, int toId, Func<TObject, bool> valid, Action<TObject> transfer, StateBase<TObject> stateBase)
         {
             m_State = stateBase;
             Id = id;
             ToId = toId;
             m_Validate = valid;
             m_Transfer = transfer;
-        }
-
-        public TransitionBase<TObject> Clone(StateBase<TObject> stateBase)
-        {
-            TransitionBase<TObject> clone = new TransitionBase<TObject>(Id,ToId,m_Validate,m_Transfer,stateBase);
-            return clone;
         }
 
         internal bool OnValidate(TObject param)
@@ -197,7 +191,7 @@ namespace Task.Switch.Structure.FSM
                     StateMachineDebug.Log($"<color=green>StateId:{Id} {nameof(OnInitialize)} Parameters:{param}</color>");
             }
         }
-        public StateBase(int id,StateMachine<TObject> stateMachine)
+        public StateBase(int id, StateMachine<TObject> stateMachine)
         {
             Id = id;
             m_Parent = stateMachine;
@@ -205,7 +199,7 @@ namespace Task.Switch.Structure.FSM
 
         public TransitionBase<TObject> Transition(Func<TObject, bool> valid)
         {
-            TransitionBase<TObject> transition = new TransitionBase<TObject>(Id, 0, valid, null,this);
+            TransitionBase<TObject> transition = new TransitionBase<TObject>(Id, 0, valid, null, this);
             m_Parent.AddTransition(transition);
             return transition;
         }
@@ -214,7 +208,7 @@ namespace Task.Switch.Structure.FSM
             return m_Parent;
         }
     }
-    
+
     internal class StateMachineConst
     {
         public const int ENTRY = int.MaxValue - 1;
@@ -226,13 +220,13 @@ namespace Task.Switch.Structure.FSM
         Dictionary<int, List<TransitionBase<TObject>>> m_Transitions;
         StateBase<TObject> m_Current;
         TObject m_Parameter;
-        
-        public StateMachine(TObject param, int id, StateMachine<TObject> parent) : base(id,parent)
+
+        public StateMachine(TObject param, int id, StateMachine<TObject> parent) : base(id, parent)
         {
             _Initialize(param);
         }
 
-        public StateMachine(TObject param) : base(int.MinValue,null)
+        public StateMachine(TObject param) : base(int.MinValue, null)
         {
             _Initialize(param);
         }
@@ -266,21 +260,21 @@ namespace Task.Switch.Structure.FSM
             SetParameter(param);
             m_Transitions = new Dictionary<int, List<TransitionBase<TObject>>>();
             m_States = new Dictionary<int, StateBase<TObject>>();
-            m_States[StateMachineConst.ENTRY] = new StateBase<TObject>(StateMachineConst.ENTRY,this);
-            m_States[StateMachineConst.END] = new StateBase<TObject>(StateMachineConst.END,this);
+            m_States[StateMachineConst.ENTRY] = new StateBase<TObject>(StateMachineConst.ENTRY, this);
+            m_States[StateMachineConst.END] = new StateBase<TObject>(StateMachineConst.END, this);
             Reset();
         }
 
         public StateBase<TObject> State<TState>(TState id) where TState : Enum
         {
-            StateBase<TObject> state = new StateBase<TObject>(Convert.ToInt32(id),this);
+            StateBase<TObject> state = new StateBase<TObject>(Convert.ToInt32(id), this);
             m_States[state.Id] = state;
             return state;
         }
 
         public StateMachine<TObject> Machine<TState>(TState id) where TState : Enum
         {
-            StateMachine<TObject> machine = new StateMachine<TObject>(m_Parameter, Convert.ToInt32(id),this);
+            StateMachine<TObject> machine = new StateMachine<TObject>(m_Parameter, Convert.ToInt32(id), this);
             m_States[machine.Id] = machine;
             return machine;
         }
