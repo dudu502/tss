@@ -15,7 +15,7 @@ namespace Task.Switch.Structure.FSM
 
         public override string ToString()
         {
-            return $"[{EventType}] {Data.ToString()}";
+            return $"[{EventType}] {Data}";
         }
     }
 
@@ -39,12 +39,11 @@ namespace Task.Switch.Structure.FSM
 
     public class TransitionBase<TObject>
     {
-        private StateBase<TObject> m_State;
         public int Id { get; private set; }
-        public int ToId { get; set; }
+        public int ToId { get; private set; }
         private Func<TObject, bool> m_Validate;
         private Action<TObject> m_Transfer;
-
+        private StateBase<TObject> m_State;
         public TransitionBase(int id, int toId, Func<TObject, bool> valid, Action<TObject> transfer, StateBase<TObject> stateBase)
         {
             m_State = stateBase;
@@ -359,6 +358,15 @@ namespace Task.Switch.Structure.FSM
                 }
                 m_Current.OnUpdate(m_Parameter);
             }
+        }
+
+        public void Dispose()
+        {
+            m_Transitions.Clear();
+            m_States.Clear();
+            m_Transitions = null;
+            m_States = null;
+            m_Current = null;
         }
     }
 }
