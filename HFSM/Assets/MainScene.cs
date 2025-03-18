@@ -105,8 +105,8 @@ public class MainScene : MonoBehaviour
             .State(GlobalState.Default)
                 .Initialize(so => { })
                 .Enter(so => { })
-                .Transition(so => so.IsDay()).To(GlobalState.Day_State).End()
-                .Transition(so => so.IsNight()).To(GlobalState.Night_State).End()
+                .Transition(so => so.IsDay()).To(GlobalState.Day_State)
+                .Transition(so => so.IsNight()).To(GlobalState.Night_State)
                 .Exit(so => { })
             .End()
         #endregion
@@ -118,7 +118,7 @@ public class MainScene : MonoBehaviour
                     .Enter(so => { })
                     .Update(so => so.ShowPlayerInfo("idle", 1))
                     .Exit(so => { })
-                    .Transition(so => true).To(DayState.Eating).End()
+                    .Transition(so => true).To(DayState.Eating)
                 .End()
         #endregion
         #region SUB EATING STATE
@@ -127,7 +127,7 @@ public class MainScene : MonoBehaviour
                     .Enter(so => so.timer.Reset())
                     .Update(so => so.ShowPlayerInfo("eating", so.timer / MyStateObject.EATING_SECS))
                     .Exit(so => { })
-                    .Transition(so => so.timer > MyStateObject.EATING_SECS).To(DayState.Talking).End()
+                    .Transition(so => so.timer > MyStateObject.EATING_SECS).To(DayState.Talking)
                 .End()
         #endregion
         #region SUB TALKING STATE
@@ -136,7 +136,7 @@ public class MainScene : MonoBehaviour
                     .Enter(so => so.timer.Reset())
                     .Update(so => so.ShowPlayerInfo("talking", so.timer / MyStateObject.TALKING_SECS))
                     .Exit(so => { })
-                    .Transition(so => so.timer > MyStateObject.TALKING_SECS).To(DayState.Working).End()
+                    .Transition(so => so.timer > MyStateObject.TALKING_SECS).To(DayState.Working)
                 .End()
         #endregion
         #region SUB WORKING STATE
@@ -145,7 +145,7 @@ public class MainScene : MonoBehaviour
                     .Enter(so => so.timer.Reset())
                     .Update(so => so.ShowPlayerInfo("working", so.timer / MyStateObject.WORKING_SECS))
                     .Exit(so => { })
-                    .Transition(so => so.timer > MyStateObject.WORKING_SECS).To(DayState.Exciting).End()
+                    .Transition(so => so.timer > MyStateObject.WORKING_SECS).To(DayState.Exciting)
                 .End()
         #endregion
         #region SUB EXCITING STATE
@@ -154,7 +154,7 @@ public class MainScene : MonoBehaviour
                     .Enter(so => so.timer.Reset())
                     .Update(so => so.ShowPlayerInfo("exciting", so.timer / MyStateObject.EXCITING_SECS))
                     .Exit(so => { })
-                    .Transition(so => so.timer > MyStateObject.EXCITING_SECS).To(DayState.Idle).End()
+                    .Transition(so => so.timer > MyStateObject.EXCITING_SECS).To(DayState.Idle)
                 .End()
         #endregion
                 .Build().SetDefault(DayState.Idle)
@@ -162,7 +162,7 @@ public class MainScene : MonoBehaviour
                 .EarlyUpdate(so => { })
                 .Enter(so => so.background.color = dayColor)
                 .Update(so => so.TimePass())
-                .Transition(so => so.IsNight()).To(GlobalState.Night_State).End()
+                .Transition(so => so.IsNight()).To(GlobalState.Night_State)
                 .Exit(so => { })
             .End()
         #endregion
@@ -174,7 +174,7 @@ public class MainScene : MonoBehaviour
                     .Enter(so => so.timer.Reset())
                     .Update(so => so.ShowPlayerInfo("sleeping", so.timer / MyStateObject.SLEEPING_SECS))
                     .Exit(so => { })
-                    .Transition(so => so.timer > MyStateObject.SLEEPING_SECS).To(NightState.Dreaming).End()
+                    .Transition(so => so.timer > MyStateObject.SLEEPING_SECS).To(NightState.Dreaming)
                 .End()
         #endregion
         #region SUB DREAMING STATE
@@ -183,7 +183,7 @@ public class MainScene : MonoBehaviour
                     .Enter(so => so.timer.Reset())
                     .Update(so => so.ShowPlayerInfo("dreaming", so.timer / MyStateObject.DREAMING_SECS))
                     .Exit(so => { })
-                    .Transition(so => so.timer > MyStateObject.DREAMING_SECS).To(NightState.Sleeping).End()
+                    .Transition(so => so.timer > MyStateObject.DREAMING_SECS).To(NightState.Sleeping)
                 .End()
         #endregion
                 .Build().SetDefault(NightState.Sleeping)
@@ -192,7 +192,7 @@ public class MainScene : MonoBehaviour
                 .Enter(so => so.background.color = nightColor)
                 .Update(so => so.TimePass())
                 .Exit(so => { })
-                .Transition(so => so.IsDay()).To(GlobalState.Day_State).End()
+                .Transition(so => so.IsDay()).To(GlobalState.Day_State)
             .End()
         #endregion
             .Build().SetDefault(GlobalState.Default);
@@ -200,6 +200,15 @@ public class MainScene : MonoBehaviour
 
     void Update()
     {
-        stateMachine0.Update();
+        if(stateMachine0 != null)
+            stateMachine0.Update();
+
+
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            stateMachine0.Dispose();
+            stateMachine0 = null;
+        }
+  
     }
 }

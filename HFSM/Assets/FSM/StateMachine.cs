@@ -78,33 +78,35 @@ namespace Task.Switch.Structure.FSM
             m_Transfer = transfer;
             return this;
         }
-        public TransitionBase<TObject> Return()
+        public StateBase<TObject> Return()
         {
             ToId = -1;
-            return this;
-        }
-        public TransitionBase<TObject> To<TState>(TState toId) where TState : Enum
-        {
-            ToId = Convert.ToInt32(toId);
-            return this;
-        }
-
-        public TransitionBase<TObject> ToEnd()
-        {
-            ToId = StateMachineConst.END;
-            return this;
-        }
-
-        public TransitionBase<TObject> ToEntry()
-        {
-            ToId = StateMachineConst.ENTRY;
-            return this;
-        }
-
-        public StateBase<TObject> End()
-        {
             return m_State;
         }
+        public StateBase<TObject> To<TState>(TState toId) where TState : Enum
+        {
+            ToId = Convert.ToInt32(toId);
+            return m_State;
+        }
+
+        public StateBase<TObject> ToEnd()
+        {
+            ToId = StateMachineConst.END;
+            return m_State;
+        }
+
+        public StateBase<TObject> ToEntry()
+        {
+            ToId = StateMachineConst.ENTRY;
+            return m_State;
+        }
+
+        public void Dispose()
+        {
+            m_Validate = null;
+            m_Transfer = null;
+            m_State = null;
+        } 
     }
 
     public class StateBase<TObject>
@@ -205,6 +207,16 @@ namespace Task.Switch.Structure.FSM
         public StateMachine<TObject> End()
         {
             return m_Parent;
+        }
+
+        public virtual void Dispose()
+        {
+            m_OnEarlyUpdate = null;
+            m_OnEnter = null;
+            m_OnUpdate = null;
+            m_OnExit = null;
+            m_OnInitialize = null;
+            m_Parent = null;
         }
     }
 
@@ -360,13 +372,19 @@ namespace Task.Switch.Structure.FSM
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
+            foreach (List<TransitionBase<TObject>> transitions in m_Transitions.Values)
+                foreach (TransitionBase<TObject> transition in transitions)
+                    transition.Dispose();
             m_Transitions.Clear();
+            foreach (StateBase<TObject> state in m_States.Values)
+                state.Dispose();
             m_States.Clear();
             m_Transitions = null;
             m_States = null;
             m_Current = null;
+            base.Dispose();
         }
     }
 }
