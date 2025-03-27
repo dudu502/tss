@@ -303,7 +303,7 @@ namespace Task.Switch.Structure.FSM
             return this;
         }
 
-        public StateMachine<TObject> Select<TState>(Func<TObject, bool> valid, TState id, TState toId, Action<TObject> transfer = null) where TState : Enum
+        public StateMachine<TObject> Select<TState>(TState id, Func<TObject, bool> valid, TState toId, Action<TObject> transfer = null) where TState : Enum
         {
             int fromStateId = Convert.ToInt32(id);
             int toStateId = Convert.ToInt32(toId);
