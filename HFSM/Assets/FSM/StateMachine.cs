@@ -336,9 +336,7 @@ namespace Task.Switch.Structure.FSM
         }
         public int GetCurrentId()
         {
-            if (m_Current == null)
-                return StateMachineConst.END;
-            return m_Current.Id;
+            return m_Current == null ? StateMachineConst.END : m_Current.Id;
         }
         public void Update()
         {
