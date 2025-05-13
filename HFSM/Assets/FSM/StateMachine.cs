@@ -348,9 +348,7 @@ namespace Task.Switch.Structure.FSM
                     if (transition.OnValidate(m_Parameter))
                     {
                         m_Current.OnExit(m_Parameter);
-
                         int toId = transition.ToId == -1 ? m_Current.PreviousId : transition.ToId;
-
                         if (m_States.TryGetValue(toId, out StateBase<TObject> next))
                         {
                             int previousId = m_Current.Id;
@@ -374,13 +372,14 @@ namespace Task.Switch.Structure.FSM
         {
             foreach (List<TransitionBase<TObject>> transitions in m_Transitions.Values)
                 foreach (TransitionBase<TObject> transition in transitions)
-                    transition.Dispose();
-            m_Transitions.Clear();
+                    transition.Dispose();      
             foreach (StateBase<TObject> state in m_States.Values)
                 state.Dispose();
-            m_States.Clear();
+            m_Transitions.Clear(); 
             m_Transitions = null;
+            m_States.Clear(); 
             m_States = null;
+            m_Current.Dispose();
             m_Current = null;
             base.Dispose();
         }
