@@ -379,8 +379,6 @@ namespace Task.Switch.Structure.FSM
             m_Transitions = null;
             m_States.Clear(); 
             m_States = null;
-            m_Current.Dispose();
-            m_Current = null;
             base.Dispose();
         }
     }
