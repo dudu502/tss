@@ -98,7 +98,7 @@ public class MainScene : MonoBehaviour
     void Start()
     {
         StateMachineDebug.Log = Debug.Log;
-        StateMachineDebug.Filter = StateMachineDebug.LogFilter.Everything;
+        StateMachineDebug.Filter = StateMachineDebug.LogFilter.OnEvent;
         stateObject0 = new MyStateObject(player, background, infoText);
         stateMachine0 = new StateMachine<MyStateObject>(stateObject0)
         #region DEFAULT STATE
@@ -163,6 +163,7 @@ public class MainScene : MonoBehaviour
                 .Enter(so => so.background.color = dayColor)
                 .Update(so => so.TimePass())
                 .Transition(so => so.IsNight()).To(GlobalState.Night_State)
+                .Event("OK", (so, evt) => { return true; }).To(GlobalState.Night_State)
                 .Exit(so => { })
             .End()
         #endregion
@@ -206,8 +207,8 @@ public class MainScene : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.E))
         {
-            stateMachine0.Dispose();
-            stateMachine0 = null;
+            stateMachine0.Dispatch(new FsmEvent("OK",null));
+            
         }
   
     }

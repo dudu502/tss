@@ -3,19 +3,34 @@ using System.Collections.Generic;
 
 namespace Task.Switch.Structure.FSM
 {
-    public class FsmEvent<E, T> where E : Enum
+    public class FsmEvent
     {
-        public E EventType { set; get; }
-        public T Data { set; get; }
-        public FsmEvent(E evtType, T data)
+        public string EventType { private set; get; }
+        public object Data { private set; get; }
+        public FsmEvent(string eventType, object data)
         {
-            EventType = evtType;
+            EventType = eventType;
+            if (string.IsNullOrEmpty(EventType))
+                throw new NullReferenceException("EventType is NULL!");
             Data = data;
+        }
+
+        public FsmEvent(string eventType)
+        {
+            EventType = eventType;
+            if (string.IsNullOrEmpty(EventType))
+                throw new NullReferenceException();
+            Data = null;
+        }
+
+        public T DataAs<T>()
+        {
+            return (T)Data;
         }
 
         public override string ToString()
         {
-            return $"[{EventType}] {Data}";
+            return $"[{EventType}] {Data ?? "<null>"}";
         }
     }
 
@@ -31,7 +46,8 @@ namespace Task.Switch.Structure.FSM
             OnExit = 16,
             OnValidate = 32,
             OnTransfer = 64,
-            Everything = OnInitialize | OnEnter | OnEarlyUpdate | OnUpdate | OnExit | OnValidate | OnTransfer,
+            OnEvent = 128,
+            Everything = OnInitialize | OnEnter | OnEarlyUpdate | OnUpdate | OnExit | OnValidate | OnTransfer | OnEvent,
         }
         public static Action<string> Log;
         public static LogFilter Filter = LogFilter.Nothing;
@@ -41,9 +57,12 @@ namespace Task.Switch.Structure.FSM
     {
         public int Id { get; private set; }
         public int ToId { get; private set; }
+        public string EventType { get; private set; }
         private Func<TObject, bool> m_Validate;
         private Action<TObject> m_Transfer;
+        private Func<TObject, FsmEvent, bool> m_OnEvent;
         private StateBase<TObject> m_State;
+
         public TransitionBase(int id, int toId, Func<TObject, bool> valid, Action<TObject> transfer, StateBase<TObject> stateBase)
         {
             m_State = stateBase;
@@ -51,6 +70,14 @@ namespace Task.Switch.Structure.FSM
             ToId = toId;
             m_Validate = valid;
             m_Transfer = transfer;
+            EventType = null;
+        }
+        public TransitionBase(int id, string type, Func<TObject, FsmEvent, bool> onEvt, StateBase<TObject> stateBase)
+        {
+            m_State = stateBase;
+            m_OnEvent = onEvt;
+            Id = id;
+            EventType = type;
         }
 
         internal bool OnValidate(TObject param)
@@ -73,6 +100,19 @@ namespace Task.Switch.Structure.FSM
                     StateMachineDebug.Log($"<color=white>Transition:{Id}->{ToId} {nameof(OnTransfer)} Parameters:{param}</color>");
             }
         }
+
+        internal bool OnEvent(TObject param, FsmEvent fsmEvent)
+        {
+            bool result = false;
+            if (m_OnEvent != null)
+            {
+                result = m_OnEvent(param, fsmEvent);
+                if (StateMachineDebug.Log != null && StateMachineDebug.LogFilter.OnEvent == (StateMachineDebug.Filter & StateMachineDebug.LogFilter.OnEvent))
+                    StateMachineDebug.Log($"<color=cyan>Event:{Id}->{ToId} {nameof(OnEvent)} OnEventResult:{result} Parameters:{param}</color>");
+            }
+            return result;
+        }
+
         public TransitionBase<TObject> Transfer(Action<TObject> transfer)
         {
             m_Transfer = transfer;
@@ -105,8 +145,10 @@ namespace Task.Switch.Structure.FSM
         {
             m_Validate = null;
             m_Transfer = null;
+            m_OnEvent = null;
             m_State = null;
-        } 
+            EventType = null;
+        }
     }
 
     public class StateBase<TObject>
@@ -204,6 +246,14 @@ namespace Task.Switch.Structure.FSM
             m_Parent.AddTransition(transition);
             return transition;
         }
+
+        public TransitionBase<TObject> Event(string type, Func<TObject, FsmEvent, bool> onEvt)
+        {
+            TransitionBase<TObject> transition = new TransitionBase<TObject>(Id, type, onEvt, this);
+            m_Parent.AddTransition(transition);
+            return transition;
+        }
+
         public StateMachine<TObject> End()
         {
             return m_Parent;
@@ -338,29 +388,55 @@ namespace Task.Switch.Structure.FSM
         {
             return m_Current == null ? StateMachineConst.END : m_Current.Id;
         }
+
+        private void ProcessStateTransition(TransitionBase<TObject> transition)
+        {
+            m_Current.OnExit(m_Parameter);
+            int targetStateId = transition.ToId == -1 ? m_Current.PreviousId : transition.ToId;
+            if (!m_States.TryGetValue(targetStateId, out StateBase<TObject> nextState))
+                throw new InvalidOperationException($"State {targetStateId} not defined.");
+            int previousStateId = m_Current.Id;
+            m_Current = nextState;
+            nextState.PreviousId = previousStateId;
+            transition.OnTransfer(m_Parameter);
+            nextState.OnEnter(m_Parameter);
+        }
+
+        private bool IsValidStateForTransition(out List<TransitionBase<TObject>> transitions)
+        {
+            transitions = null;
+            return !(m_Current == null || m_Current.Id == StateMachineConst.END || !m_Transitions.TryGetValue(m_Current.Id, out transitions));
+        }
+
+        public void Dispatch(FsmEvent fsmEvent)
+        {
+            if (IsValidStateForTransition(out List<TransitionBase<TObject>> transitions))
+            {
+                foreach (TransitionBase<TObject> transition in transitions)
+                {
+                    if (transition.EventType == fsmEvent.EventType && transition.OnEvent(m_Parameter, fsmEvent))
+                    {
+                        ProcessStateTransition(transition);
+                        return;
+                    }
+                }
+
+                foreach (StateBase<TObject> state in m_States.Values)
+                    if(state is StateMachine<TObject>)
+                        ((StateMachine<TObject>)state).Dispatch(fsmEvent);
+            }
+        }
+
         public void Update()
         {
-            if (m_Current != null && m_Current.Id != StateMachineConst.END && m_Transitions.TryGetValue(m_Current.Id, out List<TransitionBase<TObject>> transitions))
+            if (IsValidStateForTransition(out List<TransitionBase<TObject>> transitions))
             {
                 m_Current.OnEarlyUpdate(m_Parameter);
                 foreach (TransitionBase<TObject> transition in transitions)
                 {
                     if (transition.OnValidate(m_Parameter))
                     {
-                        m_Current.OnExit(m_Parameter);
-                        int toId = transition.ToId == -1 ? m_Current.PreviousId : transition.ToId;
-                        if (m_States.TryGetValue(toId, out StateBase<TObject> next))
-                        {
-                            int previousId = m_Current.Id;
-                            m_Current = next;
-                            m_Current.PreviousId = previousId;
-                            transition.OnTransfer(m_Parameter);
-                            m_Current.OnEnter(m_Parameter);
-                        }
-                        else
-                        {
-                            throw new Exception("Use State(TState) or Machine(TState) to define a State or a StateMachine." + toId);
-                        }
+                        ProcessStateTransition(transition);
                         return;
                     }
                 }
@@ -372,12 +448,12 @@ namespace Task.Switch.Structure.FSM
         {
             foreach (List<TransitionBase<TObject>> transitions in m_Transitions.Values)
                 foreach (TransitionBase<TObject> transition in transitions)
-                    transition.Dispose();      
+                    transition.Dispose();
             foreach (StateBase<TObject> state in m_States.Values)
                 state.Dispose();
-            m_Transitions.Clear(); 
+            m_Transitions.Clear();
             m_Transitions = null;
-            m_States.Clear(); 
+            m_States.Clear();
             m_States = null;
             base.Dispose();
         }
