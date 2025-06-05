@@ -36,6 +36,7 @@ public class EventScene : MonoBehaviour
                 .Transition(so=>so.counter<10).To(StateType.Heal)
                 .Transition(so=>so.counter>80).To(StateType.Damage)
                 .Event("E2",(so,evt)=>true).To(StateType.Heal)
+                .Event("E3",(so,evt)=>false).To(StateType.Heal)
                 .End()
             .State(StateType.Damage)
                 .Enter(so => so.timer.Reset())
