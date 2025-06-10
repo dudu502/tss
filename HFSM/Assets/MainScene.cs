@@ -120,7 +120,7 @@ public class MainScene : MonoBehaviour
                     .Exit(so => { })
                     .Transition(so => true).To(DayState.Eating)
                     .Event("D",(so,evt)=>false).To(GlobalState.Night_State)
-                    .Event("R", (so, evt) => false).To(GlobalState.Night_State)
+                    .Event("R", (so, evt) => { return false; }).To(GlobalState.Night_State)
                 .End()
         #endregion
         #region SUB EATING STATE
