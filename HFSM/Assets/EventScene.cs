@@ -48,7 +48,9 @@ public class EventScene : MonoBehaviour
                         so.counter--;
                     }
                 })
-                .Event("E1", (so, evt) => { return true; }).To(StateType.Heal)
+                .Event("E1", (so, evt) => {
+                    Debug.LogWarning(evt.ToString());
+                    return true; }).To(StateType.Heal)
                 .Transition(so => so.counter < 55).To(StateType.Default)
             .End()
             .State(StateType.Heal)
@@ -74,11 +76,11 @@ public class EventScene : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.E))
         {
-            machine.Dispatch(new FsmEvent("E1", null));
+            machine.Dispatch("E1", new Vector2(0,100));
         }
         if (Input.GetKeyDown(KeyCode.R))
         {
-            machine.Dispatch(new FsmEvent("E2", null));
+            machine.Dispatch("E2", null);
         }
     }
 }

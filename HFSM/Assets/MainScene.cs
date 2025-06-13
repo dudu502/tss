@@ -217,12 +217,12 @@ public class MainScene : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.E))
         {
-            stateMachine0.Dispatch(new FsmEvent("OK", null));
+            stateMachine0.Dispatch("OK", null);
 
         }
         if (Input.GetKeyDown(KeyCode.R))
         {
-            stateMachine0.Dispatch(new FsmEvent("D", null));
+            stateMachine0.Dispatch("D", null);
 
         }
 

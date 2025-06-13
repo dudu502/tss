@@ -3,37 +3,6 @@ using System.Collections.Generic;
 
 namespace Task.Switch.Structure.FSM
 {
-    public class FsmEvent
-    {
-        public string EventType { private set; get; }
-        public object Data { private set; get; }
-        public FsmEvent(string eventType, object data)
-        {
-            EventType = eventType;
-            if (string.IsNullOrEmpty(EventType))
-                throw new NullReferenceException("EventType is NULL!");
-            Data = data;
-        }
-
-        public FsmEvent(string eventType)
-        {
-            EventType = eventType;
-            if (string.IsNullOrEmpty(EventType))
-                throw new NullReferenceException("EventType is NULL!");
-            Data = null;
-        }
-
-        public T DataAs<T>()
-        {
-            return (T)Data;
-        }
-
-        public override string ToString()
-        {
-            return $"[{EventType}] {Data ?? "<null>"}";
-        }
-    }
-
     public class StateMachineDebug
     {
         public enum LogFilter
@@ -60,7 +29,7 @@ namespace Task.Switch.Structure.FSM
         public string EventType { get; private set; }
         private Func<TObject, bool> m_Validate;
         private Action<TObject> m_Transfer;
-        private Func<TObject, FsmEvent, bool> m_OnEvent;
+        private Func<TObject, object, bool> m_Event;
         private StateBase<TObject> m_State;
 
         public TransitionBase(int id, int toId, Func<TObject, bool> valid, Action<TObject> transfer, StateBase<TObject> stateBase)
@@ -70,14 +39,16 @@ namespace Task.Switch.Structure.FSM
             ToId = toId;
             m_Validate = valid;
             m_Transfer = transfer;
+            m_Event = null;
             EventType = null;
         }
 
-        public TransitionBase(int id, int toId, string type, Func<TObject, FsmEvent, bool> onEvt, Action<TObject> transfer, StateBase<TObject> stateBase)
+        public TransitionBase(int id, int toId, string type, Func<TObject, object, bool> onEvt, Action<TObject> transfer, StateBase<TObject> stateBase)
         {
             m_State = stateBase;
-            m_OnEvent = onEvt;
+            m_Event = onEvt;
             m_Transfer = transfer;
+            m_Validate = null;
             ToId = toId;
             Id = id;
             EventType = type;
@@ -105,14 +76,14 @@ namespace Task.Switch.Structure.FSM
             }
         }
 
-        internal bool OnEvent(TObject param, FsmEvent fsmEvent)
+        internal bool OnEvent(TObject param, object evt)
         {
             bool result = false;
-            if (m_OnEvent != null)
+            if (m_Event != null)
             {
-                result = m_OnEvent(param, fsmEvent);
+                result = m_Event(param, evt);
                 if (StateMachineDebug.Log != null && StateMachineDebug.LogFilter.OnEvent == (StateMachineDebug.Filter & StateMachineDebug.LogFilter.OnEvent))
-                    StateMachineDebug.Log($"Event:{Id}->{ToId} {nameof(OnEvent)} OnEventResult:{result} Parameters:{param} EventData:{fsmEvent}");
+                    StateMachineDebug.Log($"Event:{Id}->{ToId} {nameof(OnEvent)} Event:{result} Parameters:{param} EventType:{EventType} EventData:{evt ?? "<null>"}");
             }
             return result;
         }
@@ -149,7 +120,7 @@ namespace Task.Switch.Structure.FSM
         {
             m_Validate = null;
             m_Transfer = null;
-            m_OnEvent = null;
+            m_Event = null;
             m_State = null;
             EventType = null;
         }
@@ -251,14 +222,14 @@ namespace Task.Switch.Structure.FSM
             return transition;
         }
 
-        public TransitionBase<TObject> Event(string type, Func<TObject, FsmEvent, bool> onEvt)
+        public TransitionBase<TObject> Event(string type, Func<TObject, object, bool> onEvt)
         {
             TransitionBase<TObject> transition = new TransitionBase<TObject>(Id, 0, type, onEvt, null, this);
             m_Parent.AddTransition(transition);
             return transition;
         }
 
-        public virtual void Dispatch(FsmEvent evtType)
+        public virtual void Dispatch(string evtType,object evt)
         {
             return;
         }
@@ -373,7 +344,7 @@ namespace Task.Switch.Structure.FSM
             return this;
         }
 
-        public StateMachine<TObject> Select<TState>(TState id, string evtType, Func<TObject, FsmEvent, bool> onEvt, TState toId, Action<TObject> transfer = null) where TState : Enum
+        public StateMachine<TObject> Select<TState>(TState id, string evtType, Func<TObject, object, bool> onEvt, TState toId, Action<TObject> transfer = null) where TState : Enum
         {
             int fromStateId = Convert.ToInt32(id);
             int toStateId = Convert.ToInt32(toId);
@@ -392,7 +363,7 @@ namespace Task.Switch.Structure.FSM
             return this;
         }
 
-        public StateMachine<TObject> Any<TState>(string evtType, Func<TObject, FsmEvent, bool> onEvt, TState toId, Action<TObject> transfer = null) where TState : Enum
+        public StateMachine<TObject> Any<TState>(string evtType, Func<TObject, object, bool> onEvt, TState toId, Action<TObject> transfer = null) where TState : Enum
         {
             int toStateId = Convert.ToInt32(toId);
             foreach (int stateId in m_States.Keys)
@@ -436,20 +407,25 @@ namespace Task.Switch.Structure.FSM
             transitions = null;
             return m_Current.Id != StateMachineConst.END && m_Transitions.TryGetValue(m_Current.Id, out transitions);
         }
+        
+        public void Dispatch(string evtType)
+        {
+            Dispatch(evtType, null);
+        }
 
-        public override void Dispatch(FsmEvent fsmEvent)
+        public override void Dispatch(string evtType, object evt)
         {
             if (IsValidStateForTransition(out List<TransitionBase<TObject>> transitions))
             {
                 foreach (TransitionBase<TObject> transition in transitions)
                 {
-                    if (transition.EventType == fsmEvent.EventType && transition.OnEvent(m_Parameter, fsmEvent))
+                    if (transition.EventType == evtType && transition.OnEvent(m_Parameter, evt))
                     {
                         ProcessStateTransition(transition);
                         return;
                     }
                 }
-                m_Current.Dispatch(fsmEvent);
+                m_Current.Dispatch(evtType,evt);
             }
         }
 
