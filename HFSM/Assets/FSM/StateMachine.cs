@@ -27,10 +27,10 @@ namespace Task.Switch.Structure.FSM
         public int Id { get; private set; }
         public int ToId { get; private set; }
         public string EventType { get; private set; }
-        private Func<TObject, bool> m_Validate;
-        private Action<TObject> m_Transfer;
-        private Func<TObject, object, bool> m_Event;
-        private StateBase<TObject> m_State;
+        Func<TObject, bool> m_Validate;
+        Action<TObject> m_Transfer;
+        Func<TObject, object, bool> m_Event;
+        StateBase<TObject> m_State;
 
         public TransitionBase(int id, int toId, Func<TObject, bool> valid, Action<TObject> transfer, StateBase<TObject> stateBase)
         {
@@ -46,11 +46,11 @@ namespace Task.Switch.Structure.FSM
         public TransitionBase(int id, int toId, string type, Func<TObject, object, bool> onEvt, Action<TObject> transfer, StateBase<TObject> stateBase)
         {
             m_State = stateBase;
-            m_Event = onEvt;
-            m_Transfer = transfer;
-            m_Validate = null;
-            ToId = toId;
             Id = id;
+            ToId = toId;
+            m_Validate = null;
+            m_Transfer = transfer;
+            m_Event = onEvt;
             EventType = type;
         }
 
@@ -106,7 +106,7 @@ namespace Task.Switch.Structure.FSM
 
         public StateBase<TObject> ToEnd()
         {
-            ToId = StateMachineConst.END;
+            ToId = StateMachineConst.EXIT;
             return m_State;
         }
 
@@ -128,7 +128,7 @@ namespace Task.Switch.Structure.FSM
 
     public class StateBase<TObject>
     {
-        private StateMachine<TObject> m_Parent;
+        StateMachine<TObject> m_Parent;
         public int Id { get; private set; }
         public int PreviousId;
         protected Action<TObject> m_OnInitialize;
@@ -229,7 +229,7 @@ namespace Task.Switch.Structure.FSM
             return transition;
         }
 
-        public virtual void Dispatch(string evtType,object evt)
+        public virtual void Dispatch(string evtType, object evt)
         {
             return;
         }
@@ -253,7 +253,7 @@ namespace Task.Switch.Structure.FSM
     internal class StateMachineConst
     {
         public const int ENTRY = int.MaxValue - 1;
-        public const int END = int.MaxValue;
+        public const int EXIT = int.MaxValue;
     }
 
     public class StateMachine<TObject> : StateBase<TObject>
@@ -297,13 +297,13 @@ namespace Task.Switch.Structure.FSM
             return m_Parameter;
         }
 
-        private void _Initialize(TObject param)
+        void _Initialize(TObject param)
         {
             SetParameter(param);
             m_Transitions = new Dictionary<int, List<TransitionBase<TObject>>>();
             m_States = new Dictionary<int, StateBase<TObject>>();
             m_States[StateMachineConst.ENTRY] = new StateBase<TObject>(StateMachineConst.ENTRY, this);
-            m_States[StateMachineConst.END] = new StateBase<TObject>(StateMachineConst.END, this);
+            m_States[StateMachineConst.EXIT] = new StateBase<TObject>(StateMachineConst.EXIT, this);
             Reset();
         }
 
@@ -358,7 +358,7 @@ namespace Task.Switch.Structure.FSM
         {
             int toStateId = Convert.ToInt32(toId);
             foreach (int stateId in m_States.Keys)
-                if (stateId != StateMachineConst.ENTRY && stateId != StateMachineConst.END && stateId != toStateId)
+                if (stateId != StateMachineConst.ENTRY && stateId != StateMachineConst.EXIT && stateId != toStateId)
                     AddTransition(new TransitionBase<TObject>(stateId, toStateId, valid, transfer, m_States[stateId]));
             return this;
         }
@@ -367,7 +367,7 @@ namespace Task.Switch.Structure.FSM
         {
             int toStateId = Convert.ToInt32(toId);
             foreach (int stateId in m_States.Keys)
-                if (stateId != StateMachineConst.ENTRY && stateId != StateMachineConst.END && stateId != toStateId)
+                if (stateId != StateMachineConst.ENTRY && stateId != StateMachineConst.EXIT && stateId != toStateId)
                     AddTransition(new TransitionBase<TObject>(stateId, toStateId, evtType, onEvt, transfer, m_States[stateId]));
             return this;
         }
@@ -389,7 +389,7 @@ namespace Task.Switch.Structure.FSM
             return m_Current.Id;
         }
 
-        private void ProcessStateTransition(TransitionBase<TObject> transition)
+        void ProcessStateTransition(TransitionBase<TObject> transition)
         {
             m_Current.OnExit(m_Parameter);
             int targetStateId = transition.ToId == -1 ? m_Current.PreviousId : transition.ToId;
@@ -402,12 +402,12 @@ namespace Task.Switch.Structure.FSM
             m_Current.OnEnter(m_Parameter);
         }
 
-        private bool IsValidStateForTransition(out List<TransitionBase<TObject>> transitions)
+        bool IsValidStateForTransition(out List<TransitionBase<TObject>> transitions)
         {
             transitions = null;
-            return m_Current.Id != StateMachineConst.END && m_Transitions.TryGetValue(m_Current.Id, out transitions);
+            return m_Current.Id != StateMachineConst.EXIT && m_Transitions.TryGetValue(m_Current.Id, out transitions);
         }
-        
+
         public void Dispatch(string evtType)
         {
             Dispatch(evtType, null);
@@ -425,7 +425,7 @@ namespace Task.Switch.Structure.FSM
                         return;
                     }
                 }
-                m_Current.Dispatch(evtType,evt);
+                m_Current.Dispatch(evtType, evt);
             }
         }
 
