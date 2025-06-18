@@ -44,6 +44,7 @@ public class MyStateObject
 
     public TMPro.TMP_Text infoText;
     public Timer timer;
+
     public MyStateObject(Player player, Image background,TMP_Text infoText)
     {
         timer = new Timer();
@@ -93,6 +94,7 @@ public class MainScene : MonoBehaviour
     [SerializeField] Player player;
     [SerializeField] Image background;
     [SerializeField] TMP_Text infoText;
+    [SerializeField] TMPro.TMP_Text tagText;
     MyStateObject stateObject0;
 
     void Start()
@@ -100,9 +102,9 @@ public class MainScene : MonoBehaviour
         StateMachineDebug.Log = Debug.Log;
         StateMachineDebug.Filter = StateMachineDebug.LogFilter.OnEvent;
         stateObject0 = new MyStateObject(player, background, infoText);
-        stateMachine0 = new StateMachine<MyStateObject>(stateObject0)
+        stateMachine0 = new StateMachine<MyStateObject>(stateObject0).SetTag("MyStateObject")
         #region DEFAULT STATE
-            .State(GlobalState.Default)
+            .State(GlobalState.Default).SetTag("Default")
                 .Initialize(so => { })
                 .Enter(so => { })
                 .Transition(so => so.IsDay()).To(GlobalState.Day_State)
@@ -111,9 +113,9 @@ public class MainScene : MonoBehaviour
             .End()
         #endregion
         #region DAY STATE
-            .Machine(GlobalState.Day_State)
+            .Machine(GlobalState.Day_State).SetTag("Day_State")
         #region SUB IDLE STATE
-                .State(DayState.Idle)
+                .State(DayState.Idle).SetTag("Idle")
                     .Initialize(so => { })
                     .Enter(so => { })
                     .Update(so => so.ShowPlayerInfo("idle", 1))
@@ -124,7 +126,7 @@ public class MainScene : MonoBehaviour
                 .End()
         #endregion
         #region SUB EATING STATE
-                .State(DayState.Eating)
+                .State(DayState.Eating).SetTag("Eating")
                     .Initialize(so => { })
                     .Enter(so => so.timer.Reset())
                     .Update(so => so.ShowPlayerInfo("eating", so.timer / MyStateObject.EATING_SECS))
@@ -135,7 +137,7 @@ public class MainScene : MonoBehaviour
                 .End()
         #endregion
         #region SUB TALKING STATE
-                .State(DayState.Talking)
+                .State(DayState.Talking).SetTag("Talking")
                     .Initialize(so => { })
                     .Enter(so => so.timer.Reset())
                     .Update(so => so.ShowPlayerInfo("talking", so.timer / MyStateObject.TALKING_SECS))
@@ -146,7 +148,7 @@ public class MainScene : MonoBehaviour
                 .End()
         #endregion
         #region SUB WORKING STATE
-                .State(DayState.Working)
+                .State(DayState.Working).SetTag("Working")
                     .Initialize(so => { })
                     .Enter(so => so.timer.Reset())
                     .Update(so => so.ShowPlayerInfo("working", so.timer / MyStateObject.WORKING_SECS))
@@ -157,7 +159,7 @@ public class MainScene : MonoBehaviour
                 .End()
         #endregion
         #region SUB EXCITING STATE
-                .State(DayState.Exciting)
+                .State(DayState.Exciting).SetTag("Exciting")
                     .Initialize(so => { })
                     .Enter(so => so.timer.Reset())
                     .Update(so => so.ShowPlayerInfo("exciting", so.timer / MyStateObject.EXCITING_SECS))
@@ -178,9 +180,9 @@ public class MainScene : MonoBehaviour
             .End()
         #endregion
         #region NIGHT STATE
-            .Machine(GlobalState.Night_State)
+            .Machine(GlobalState.Night_State).SetTag("Night_State")
         #region SUB SLEEPING STATE
-                .State(NightState.Sleeping)
+                .State(NightState.Sleeping).SetTag("Sleeping")
                     .Initialize(so => { })
                     .Enter(so => so.timer.Reset())
                     .Update(so => so.ShowPlayerInfo("sleeping", so.timer / MyStateObject.SLEEPING_SECS))
@@ -189,7 +191,7 @@ public class MainScene : MonoBehaviour
                 .End()
         #endregion
         #region SUB DREAMING STATE
-                .State(NightState.Dreaming)
+                .State(NightState.Dreaming).SetTag("Dreaming")
                     .Initialize(so => { })
                     .Enter(so => so.timer.Reset())
                     .Update(so => so.ShowPlayerInfo("dreaming", so.timer / MyStateObject.DREAMING_SECS))
@@ -208,12 +210,16 @@ public class MainScene : MonoBehaviour
         #endregion
             .Build().SetDefault(GlobalState.Default);
     }
-
+    List<string> Tags = new List<string>();
     void Update()
     {
         if (stateMachine0 != null)
             stateMachine0.Update();
-
+        Tags.Clear();
+        stateMachine0.GetTags(Tags);
+        tagText.text = "";
+        foreach (var s in Tags)
+            tagText.text += "->"+s;
 
         if (Input.GetKeyDown(KeyCode.E))
         {
