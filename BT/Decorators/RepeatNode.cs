@@ -1,6 +1,6 @@
 ﻿namespace Task.Switch.Structure.BT.Decorators
 {
-    public class RepeatNode : DecoratorNode
+    public class RepeatNode<T> : DecoratorNode<T>
     {
         protected override NodeResult GetResult()
         {

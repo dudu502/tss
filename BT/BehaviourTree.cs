@@ -7,117 +7,123 @@ using Task.Switch.Structure.BT.Decorators;
 
 namespace Task.Switch.Structure.BT
 {
-    public class BehaviourTree
+    public enum NodeResult : byte
+    {
+        Continue = 1,
+        Failure = 2,
+        Success = 4
+    }
+    public class BehaviourTree<T>
     {
         #region Builder
-        public class TreeBuilder
+        public class TreeBuilder<T>
         {
-            private readonly Stack<Node> m_PointerStack = new Stack<Node>();
-            private readonly BehaviourTree m_Tree;
-            private readonly RootNode m_Root;
-            public TreeBuilder(BehaviourTree tree, RootNode root)
+            private readonly Stack<Node<T>> m_PointerStack = new Stack<Node<T>>();
+            private readonly BehaviourTree<T> m_Tree;
+            private readonly RootNode<T> m_Root;
+            public TreeBuilder(BehaviourTree<T> tree, RootNode<T> root)
             {
                 m_Tree = tree;
                 m_Root = root;
                 PushNodeToTree(m_Root);
             }
-            public TreeBuilder Repeat()
+            public TreeBuilder<T> Repeat()
             {
-                PushNodeToTree(new RepeatNode());
+                PushNodeToTree(new RepeatNode<T>());
                 return this;
             }
-            public TreeBuilder Success()
+            public TreeBuilder<T> Success()
             {
-                PushNodeToTree(new ReturnFailureNode());
+                PushNodeToTree(new ReturnFailureNode<T>());
                 return this;
             }
-            public TreeBuilder Failure()
+            public TreeBuilder<T> Failure()
             {
-                PushNodeToTree(new ReturnFailureNode());
+                PushNodeToTree(new ReturnFailureNode<T>());
                 return this;
             }
-            public TreeBuilder Invert()
+            public TreeBuilder<T> Invert()
             {
-                PushNodeToTree(new InverterNode());
+                PushNodeToTree(new InverterNode<T>());
                 return this;
             }
-            public TreeBuilder RepeatUntil(Func<bool> repeatUntil)
+            public TreeBuilder<T> RepeatUntil(Func<bool> repeatUntil)
             {
-                PushNodeToTree(new RepeatUntilNode(repeatUntil));
+                PushNodeToTree(new RepeatUntilNode<T>(repeatUntil));
                 return this;
             }
-            public TreeBuilder Sequence()
+            public TreeBuilder<T> Sequence()
             {
-                PushNodeToTree(new SequencerNode());
+                PushNodeToTree(new SequencerNode<T>());
                 return this;
             }
-            public TreeBuilder Select()
+            public TreeBuilder<T> Select()
             {
-                PushNodeToTree(new SelectorNode());
+                PushNodeToTree(new SelectorNode<T>());
                 return this;
             }
-            public TreeBuilder Parallel()
+            public TreeBuilder<T> Parallel()
             {
-                PushNodeToTree(new ParallelNode());
+                PushNodeToTree(new ParallelNode<T>());
                 return this;
             }
-            public TreeBuilder ParallelSelect()
+            public TreeBuilder<T> ParallelSelect()
             {
-                PushNodeToTree(new ParallelSelectNode());
+                PushNodeToTree(new ParallelSelectNode<T>());
                 return this;
             }
-            public TreeBuilder ParallelSequence()
+            public TreeBuilder<T> ParallelSequence()
             {
-                PushNodeToTree(new ParallelSequencerNode());
+                PushNodeToTree(new ParallelSequencerNode<T>());
                 return this;
             }
-            public Node Do()
+            public Node<T> Do()
             {
-                GenericNode genericNode = new GenericNode();
+                GenericNode<T> genericNode = new GenericNode<T>();
                 PushNodeToTree(genericNode);
                 return genericNode;
             }
-            public Node WaitTime(int ms)
+            public Node<T> WaitTime(int ms)
             {
-                WaitTimeNode waitNode = new WaitTimeNode(ms);
+                WaitTimeNode<T> waitNode = new WaitTimeNode<T>(ms);
                 PushNodeToTree(waitNode);
                 return waitNode;
             }
-            public Node WaitTurn(int frameCount)
+            public Node<T> WaitTurn(int frameCount)
             {
-                WaitTurnNode waitFrameNode = new WaitTurnNode(frameCount);
+                WaitTurnNode<T> waitFrameNode = new WaitTurnNode<T>(frameCount);
                 PushNodeToTree(waitFrameNode);
                 return waitFrameNode;
             }
-            public Node WaitUntil(Func<bool> waitFunc)
+            public Node<T> WaitUntil(Func<bool> waitFunc)
             {
-                WaitUntilNode waitUntilNode = new WaitUntilNode(waitFunc);
+                WaitUntilNode<T> waitUntilNode = new WaitUntilNode<T>(waitFunc);
                 PushNodeToTree(waitUntilNode);
                 return waitUntilNode;
             }
-            public TreeBuilder End()
+            public TreeBuilder<T> End()
             {
                 if (m_PointerStack.Count > 0)
                     m_PointerStack.Pop();
                 return this;
             }
-            void PushNodeToTree(Node child)
+            void PushNodeToTree(Node<T> child)
             {
                 child.Tree = m_Tree;
-                if(m_PointerStack.TryPeek(out Node parent))
+                if(m_PointerStack.TryPeek(out Node<T> parent))
                 {
                     switch (parent)
                     {
-                        case ActionNode:
+                        case ActionNode<T>:
                             return;
-                        case RootNode:
-                            ((RootNode)parent).SetChild(child);
+                        case RootNode<T>:
+                            ((RootNode<T>)parent).SetChild(child);
                             break;
-                        case DecoratorNode:
-                            ((DecoratorNode)parent).SetChild(child);
+                        case DecoratorNode<T>:
+                            ((DecoratorNode<T>)parent).SetChild(child);
                             break;
-                        case CompositeNode:
-                            ((CompositeNode)parent).AddChild(child);
+                        case CompositeNode<T>:
+                            ((CompositeNode<T>)parent).AddChild(child);
                             break;
                     }
                 }
@@ -126,12 +132,14 @@ namespace Task.Switch.Structure.BT
         }
         #endregion
 
-        public readonly TreeBuilder Builder;
-        private readonly RootNode m_Root = new RootNode();
-        private Node.NodeResult m_TreeState = Node.NodeResult.Continue;
-        public BehaviourTree()
+        public readonly TreeBuilder<T> Builder;
+        private readonly RootNode<T> m_Root = new RootNode<T>();
+        private NodeResult m_TreeState = NodeResult.Continue;
+        public T Parameter { get; private set; }
+        public BehaviourTree(T para)
         {
-            Builder = new TreeBuilder(this, m_Root);
+            Parameter = para;
+            Builder = new TreeBuilder<T>(this, m_Root);
         }
   
         public void Reset()
@@ -142,9 +150,9 @@ namespace Task.Switch.Structure.BT
             }
         }
 
-        public Node.NodeResult Execute()
+        public NodeResult Execute()
         {
-            if (m_Root.Result == Node.NodeResult.Continue)
+            if (m_Root.Result == NodeResult.Continue)
                 m_TreeState = m_Root.Execute();
             return m_TreeState;
         }

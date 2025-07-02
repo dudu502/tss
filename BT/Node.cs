@@ -1,29 +1,20 @@
-﻿
-using System;
+﻿using System;
 
 namespace Task.Switch.Structure.BT
 {
-    public abstract class Node
+    public abstract class Node<T>
     {
-        public enum NodeResult:byte
-        {
-            Continue = 1,
-            Failure = 2,
-            Success = 4
-        }
-        public BehaviourTree Tree;
+        public BehaviourTree<T> Tree;
         public NodeResult Result { private set; get; } = NodeResult.Continue;
-        private bool m_Started = false;
-       
-        protected Action m_Start;
-        protected Action m_Stop;
-        protected Action m_Update;
-        protected Func<NodeResult> m_NodeResult;
-        public Node Start(Action start) { m_Start = start; return this; }
-        public Node Stop(Action stop) { m_Stop = stop; return this; }
-        public Node Update(Action update) { m_Update = update; return this; }
-
-        public Node GetResult(Func<NodeResult> result) { m_NodeResult = result; return this; }
+        private bool m_Started = false;    
+        protected Action<T> m_Start;
+        protected Action<T> m_Stop;
+        protected Action<T> m_Update;
+        protected Func<T,NodeResult> m_NodeResult;
+        public Node<T> Start(Action<T> start) { m_Start = start; return this; }
+        public Node<T> Stop(Action<T> stop) { m_Stop = stop; return this; }
+        public Node<T> Update(Action<T> update) { m_Update = update; return this; }
+        public Node<T> GetResult(Func<T, NodeResult> result) { m_NodeResult = result; return this; }
         public NodeResult Execute()
         {
             if (!m_Started)
@@ -44,29 +35,29 @@ namespace Task.Switch.Structure.BT
         {
             Result = NodeResult.Continue;
         }
-        public BehaviourTree.TreeBuilder End()
+        public BehaviourTree<T>.TreeBuilder<T> End()
         {
             return Tree.Builder.End();         
         }
         protected virtual void OnStart() 
         {
-            m_Start?.Invoke();
+            m_Start?.Invoke(Tree.Parameter);
         }
         protected virtual void OnUpdate() 
         {
-            m_Update?.Invoke();
+            m_Update?.Invoke(Tree.Parameter);
         }
         protected abstract NodeResult GetResult();
         protected virtual void OnStop() 
         {
-            m_Stop?.Invoke();
+            m_Stop?.Invoke(Tree.Parameter);
         }    
     }   
 
-    public sealed class RootNode : Node
+    public sealed class RootNode<T> : Node<T>
     {
-        private Node m_Child;
-        public void SetChild(Node node)
+        private Node<T> m_Child;
+        public void SetChild(Node<T> node)
         {
             m_Child = node;
         }

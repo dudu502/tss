@@ -2,7 +2,7 @@
 
 namespace Task.Switch.Structure.BT.Actions
 {
-    public class WaitUntilNode : ActionNode
+    public class WaitUntilNode<T> : ActionNode<T>
     {
         private readonly Func<bool> m_WaitUntilFunc;
         public WaitUntilNode(Func<bool> waitUntil)
@@ -15,7 +15,7 @@ namespace Task.Switch.Structure.BT.Actions
             if (m_WaitUntilFunc != null && m_WaitUntilFunc.Invoke())
             {
                 if (m_NodeResult != null)
-                    return m_NodeResult.Invoke();
+                    return m_NodeResult.Invoke(Tree.Parameter);
                 return NodeResult.Success;
             }
             return NodeResult.Continue;

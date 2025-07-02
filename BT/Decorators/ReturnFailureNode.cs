@@ -1,7 +1,7 @@
 ﻿
 namespace Task.Switch.Structure.BT.Decorators
 {
-    public class ReturnFailureNode : DecoratorNode
+    public class ReturnFailureNode<T> : DecoratorNode<T>
     {
         protected override NodeResult GetResult()
         {

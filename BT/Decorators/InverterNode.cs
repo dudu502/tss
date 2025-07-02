@@ -1,7 +1,7 @@
 ﻿
 namespace Task.Switch.Structure.BT.Decorators
 {
-    public class InverterNode : DecoratorNode
+    public class InverterNode<T> : DecoratorNode<T>
     {
         protected override NodeResult GetResult()
         {

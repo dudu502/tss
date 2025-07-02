@@ -2,7 +2,7 @@
 
 namespace Task.Switch.Structure.BT.Actions
 {
-    public class WaitTimeNode : ActionNode
+    public class WaitTimeNode<T> : ActionNode<T>
     {
         readonly TimeSpan m_WaitTimeSpan;
         DateTime m_StartDateTime;
@@ -29,7 +29,7 @@ namespace Task.Switch.Structure.BT.Actions
             if (DateTime.Now - m_StartDateTime > m_WaitTimeSpan)
             {
                 if (m_NodeResult != null)
-                    return m_NodeResult.Invoke();
+                    return m_NodeResult.Invoke(Tree.Parameter);
                 return NodeResult.Success;
             }
             return NodeResult.Continue;

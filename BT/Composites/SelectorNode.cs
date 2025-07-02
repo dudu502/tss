@@ -1,6 +1,6 @@
 ﻿namespace Task.Switch.Structure.BT.Composites
 {
-    public class SelectorNode:CompositeNode
+    public class SelectorNode<T> : CompositeNode<T>
     {
         int m_CurrentIndex;
         protected override void OnStart()
@@ -16,7 +16,7 @@
         protected override NodeResult GetResult()
         {
             if(m_Children.Count == 0)return NodeResult.Failure;
-            Node child = m_Children[m_CurrentIndex];
+            Node<T> child = m_Children[m_CurrentIndex];
             switch (child.Execute())
             {
                 case NodeResult.Continue:

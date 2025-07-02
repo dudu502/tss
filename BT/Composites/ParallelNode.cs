@@ -1,12 +1,12 @@
 ﻿
 namespace Task.Switch.Structure.BT.Composites
 {
-    public class ParallelNode: CompositeNode
+    public class ParallelNode<T> : CompositeNode<T>
     {
         protected override NodeResult GetResult()
         {
             NodeResult state = NodeResult.Success;
-            foreach (Node child in m_Children)
+            foreach (Node<T> child in m_Children)
                 state |= child.Execute();
             if ((state & NodeResult.Failure) == NodeResult.Failure)
                 return NodeResult.Failure;

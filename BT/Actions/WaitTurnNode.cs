@@ -1,6 +1,6 @@
 ﻿namespace Task.Switch.Structure.BT.Actions
 {
-    public class WaitTurnNode : ActionNode
+    public class WaitTurnNode<T> : ActionNode<T>
     {
         readonly int m_WaitTurnCount;
         int m_TurnCount = 0;
@@ -26,7 +26,7 @@
             if (m_TurnCount >= m_WaitTurnCount)
             {
                 if (m_NodeResult != null)
-                    return m_NodeResult.Invoke();
+                    return m_NodeResult.Invoke(Tree.Parameter);
                 return NodeResult.Success;
             }
             return NodeResult.Continue;

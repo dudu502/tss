@@ -1,9 +1,9 @@
 ﻿namespace Task.Switch.Structure.BT.Decorators
 {
-    public abstract class DecoratorNode : Node
+    public abstract class DecoratorNode<T> : Node<T>
     {
-        protected Node m_Child;
-        public void SetChild(Node node)
+        protected Node<T> m_Child;
+        public void SetChild(Node<T> node)
         {
             m_Child = node;
         }
