@@ -21,28 +21,60 @@ namespace Task.Switch.Structure.BT
             {
                 return $"Data:{Id} {Name} {Count}";
             }
+            
         }
         static void Main(string[] args)
         {
-            BehaviourTree<Data> tree = new BehaviourTree<Data>(new Data(100, "name", 90));
+            BehaviourTree<Data> tree = new BehaviourTree<Data>(new Data(100, "name", 0));
 
             tree.Builder
                 .Repeat()
-                    .Sequence()
+                    .Select()
                         .Do()
-                            .Start(data => Console.WriteLine($"Start1 {data}"))
-                            .Update(data => Console.WriteLine($"Update1 {data}"))
-                            .Stop(data => Console.WriteLine($"Stop1 {data}"))
-                            .GetResult(data => NodeResult.Success)
+                            .Start(data => { Console.WriteLine($"START EAT APPLE");data.Count = 0; })
+                            .Update(data => { Console.WriteLine($"EATING APPLE");data.Count++; })
+                            .Stop(data => Console.WriteLine($"STOP EAT APPLE"))
+                            .SetResult(data => 
+                            {
+                                if (data.Count < 5) return NodeResult.Continue;
+                                else return NodeResult.Failure;
+                            })
                         .End()
                         .Do()
-                            .Start(data => Console.WriteLine($"Start2 {data}"))
-                            .Update(data => Console.WriteLine($"Update2 {data}"))
-                            .Stop(data => Console.WriteLine($"Stop2 {data}"))
-                            .GetResult(data => NodeResult.Success)
+                            .Start(data => { Console.WriteLine($"START EAT ORANGE"); data.Count = 0; })
+                            .Update(data => { Console.WriteLine($"EATING ORANGE"); data.Count++; })
+                            .Stop(data => Console.WriteLine($"STOP EAT ORANGE"))
+                            .SetResult(data =>
+                            {
+                                if(data.Count < 6) return NodeResult.Continue;
+                                else return NodeResult.Failure;
+                            })
+                        .End()
+                        .Sequence()
+                            .Do()
+                                .Start(data => { Console.WriteLine("START PEEL BANANA"); data.Count = 0; })
+                                .Update(data => { Console.WriteLine($"PEELING BANANA"); data.Count++; })
+                                .Stop(data => Console.WriteLine($"STOP PEEL BANANA"))
+                                .SetResult(data =>
+                                {
+                                    if (data.Count < 3) return NodeResult.Continue;
+                                    else return NodeResult.Success;
+                                })
+                            .End()
+                            .Do()
+                                .Start(data => { Console.WriteLine("START EAT BANANA"); data.Count = 0; })
+                                .Update(data => { Console.WriteLine($"EATING BANANA"); data.Count++; })
+                                .Stop(data => Console.WriteLine($"STOP EAT BANANA"))
+                                .SetResult(data =>
+                                {
+                                    if(data.Count < 4) return NodeResult.Continue;
+                                    else return NodeResult.Success;
+                                })
+                            .End()
                         .End()
                     .End()
                 .End();
+
 
             while (true)
             {

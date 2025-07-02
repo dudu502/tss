@@ -7,7 +7,7 @@ using Task.Switch.Structure.BT.Decorators;
 
 namespace Task.Switch.Structure.BT
 {
-    public enum NodeResult : byte
+    public enum NodeResult
     {
         Continue = 1,
         Failure = 2,
@@ -34,7 +34,7 @@ namespace Task.Switch.Structure.BT
             }
             public TreeBuilder<T> Success()
             {
-                PushNodeToTree(new ReturnFailureNode<T>());
+                PushNodeToTree(new ReturnSuccessNode<T>());
                 return this;
             }
             public TreeBuilder<T> Failure()
@@ -47,7 +47,7 @@ namespace Task.Switch.Structure.BT
                 PushNodeToTree(new InverterNode<T>());
                 return this;
             }
-            public TreeBuilder<T> RepeatUntil(Func<bool> repeatUntil)
+            public TreeBuilder<T> RepeatUntil(Func<T,bool> repeatUntil)
             {
                 PushNodeToTree(new RepeatUntilNode<T>(repeatUntil));
                 return this;
@@ -95,7 +95,7 @@ namespace Task.Switch.Structure.BT
                 PushNodeToTree(waitFrameNode);
                 return waitFrameNode;
             }
-            public Node<T> WaitUntil(Func<bool> waitFunc)
+            public Node<T> WaitUntil(Func<T,bool> waitFunc)
             {
                 WaitUntilNode<T> waitUntilNode = new WaitUntilNode<T>(waitFunc);
                 PushNodeToTree(waitUntilNode);
@@ -144,10 +144,7 @@ namespace Task.Switch.Structure.BT
   
         public void Reset()
         {
-            if (m_Root != null)
-            {
-                m_Root.Reset();
-            }
+            m_Root?.Reset();
         }
 
         public NodeResult Execute()

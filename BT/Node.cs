@@ -14,7 +14,7 @@ namespace Task.Switch.Structure.BT
         public Node<T> Start(Action<T> start) { m_Start = start; return this; }
         public Node<T> Stop(Action<T> stop) { m_Stop = stop; return this; }
         public Node<T> Update(Action<T> update) { m_Update = update; return this; }
-        public Node<T> GetResult(Func<T, NodeResult> result) { m_NodeResult = result; return this; }
+        public Node<T> SetResult(Func<T, NodeResult> result) { m_NodeResult = result; return this; }
         public NodeResult Execute()
         {
             if (!m_Started)

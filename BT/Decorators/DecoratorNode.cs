@@ -10,8 +10,7 @@
         public override void Reset()
         {
             base.Reset();
-            if (m_Child != null)
-                m_Child.Reset();
+            m_Child?.Reset();
         }
     }
 }

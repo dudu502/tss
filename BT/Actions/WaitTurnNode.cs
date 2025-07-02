@@ -17,7 +17,7 @@
         public override void Reset()
         {
             base.Reset();
-            m_TurnCount=0;
+            m_TurnCount = 0;
         }
 
         protected override NodeResult GetResult()
