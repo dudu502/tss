@@ -21,8 +21,9 @@ namespace Task.Switch.Structure.BT
             {
                 return $"Data:{Id} {Name} {Count}";
             }
-            
+
         }
+
         static void Main(string[] args)
         {
             Console.WriteLine("MAIN...");

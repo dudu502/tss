@@ -89,27 +89,19 @@ namespace Task.Switch.Structure.BT
         }
         public Node<T> Do()
         {
-            GenericNode<T> genericNode = new GenericNode<T>();
-            PushNodeToTree(genericNode);
-            return genericNode;
+            return PushNodeToTree(new GenericNode<T>());
         }
         public Node<T> WaitTime(int ms)
         {
-            WaitTimeNode<T> waitNode = new WaitTimeNode<T>(ms);
-            PushNodeToTree(waitNode);
-            return waitNode;
+            return PushNodeToTree(new WaitTimeNode<T>(ms));
         }
         public Node<T> WaitTurn(int frameCount)
         {
-            WaitTurnNode<T> waitFrameNode = new WaitTurnNode<T>(frameCount);
-            PushNodeToTree(waitFrameNode);
-            return waitFrameNode;
+            return PushNodeToTree(new WaitTurnNode<T>(frameCount));
         }
         public Node<T> WaitUntil(Func<T, bool> waitFunc)
         {
-            WaitUntilNode<T> waitUntilNode = new WaitUntilNode<T>(waitFunc);
-            PushNodeToTree(waitUntilNode);
-            return waitUntilNode;
+            return PushNodeToTree(new WaitUntilNode<T>(waitFunc));
         }
         public BehaviourTree<T> End()
         {
@@ -117,12 +109,13 @@ namespace Task.Switch.Structure.BT
                 m_PointerStack.Pop();
             return this;
         }
-        void PushNodeToTree(Node<T> child)
+        Node<T> PushNodeToTree(Node<T> child)
         {
             child.Tree = this;
             if (m_PointerStack.TryPeek(out Node<T> parent))
                 parent.AddChild(child);
             m_PointerStack.Push(child);
+            return child;
         }
     }
 }
