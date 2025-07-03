@@ -3,7 +3,7 @@
     public abstract class DecoratorNode<T> : Node<T>
     {
         protected Node<T> m_Child;
-        public void SetChild(Node<T> node)
+        public override void AddChild(Node<T> node)
         {
             m_Child = node;
         }

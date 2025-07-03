@@ -6,7 +6,7 @@ namespace Task.Switch.Structure.BT.Composites
         protected override NodeResult GetResult()
         {
             NodeResult result = NodeResult.Success;
-            foreach(Node<T> child in m_Children)
+            foreach (Node<T> child in m_Children)
             {
                 result = child.Execute();
                 if (result == NodeResult.Success)

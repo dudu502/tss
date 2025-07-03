@@ -5,9 +5,9 @@ namespace Task.Switch.Structure.BT.Composites
     public abstract class CompositeNode<T> : Node<T>
     {
         protected readonly List<Node<T>> m_Children = new List<Node<T>>();
-        public void AddChild(Node<T> child)
+        public override void AddChild(Node<T> node)
         {
-            m_Children.Add(child);
+            m_Children.Add(node);
         }
         public override void Reset()
         {

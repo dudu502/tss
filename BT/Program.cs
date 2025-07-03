@@ -25,9 +25,10 @@ namespace Task.Switch.Structure.BT
         }
         static void Main(string[] args)
         {
+            Console.WriteLine("MAIN...");
             BehaviourTree<Data> tree = new BehaviourTree<Data>(new Data(100, "name", 0));
 
-            tree.Builder
+            tree
                 .Repeat()
                     .Select()
                         .Do()

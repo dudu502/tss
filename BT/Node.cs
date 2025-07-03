@@ -7,9 +7,9 @@ namespace Task.Switch.Structure.BT
         public BehaviourTree<T> Tree;
         public NodeResult Result { private set; get; } = NodeResult.Continue;
         private bool m_Started = false;    
-        protected Action<T> m_Start;
-        protected Action<T> m_Stop;
-        protected Action<T> m_Update;
+        private Action<T> m_Start;
+        private Action<T> m_Stop;
+        private Action<T> m_Update;
         protected Func<T,NodeResult> m_NodeResult;
         public Node<T> Start(Action<T> start) { m_Start = start; return this; }
         public Node<T> Stop(Action<T> stop) { m_Stop = stop; return this; }
@@ -23,21 +23,26 @@ namespace Task.Switch.Structure.BT
                 m_Started = true;
             }
             OnUpdate();
-            Result = GetResult();    
-            if(Result == NodeResult.Success||Result == NodeResult.Failure)
+            Result = GetResult();
+            if (Result == NodeResult.Success || Result == NodeResult.Failure)
             {
                 OnStop();
                 m_Started = false;
             }
             return Result;
         }
+
+        public virtual void AddChild(Node<T> node)
+        {
+
+        }
         public virtual void Reset()
         {
             Result = NodeResult.Continue;
         }
-        public BehaviourTree<T>.TreeBuilder<T> End()
+        public BehaviourTree<T> End()
         {
-            return Tree.Builder.End();         
+            return Tree.End();         
         }
         protected virtual void OnStart() 
         {
@@ -57,11 +62,10 @@ namespace Task.Switch.Structure.BT
     public sealed class RootNode<T> : Node<T>
     {
         private Node<T> m_Child;
-        public void SetChild(Node<T> node)
+        public override void AddChild(Node<T> node)
         {
             m_Child = node;
         }
-
         protected override NodeResult GetResult()
         {
             if(m_Child != null)
@@ -71,8 +75,7 @@ namespace Task.Switch.Structure.BT
         public override void Reset()
         {
             base.Reset();
-            if (m_Child != null)
-                m_Child.Reset();
+            m_Child?.Reset();
         }
     }
 }
