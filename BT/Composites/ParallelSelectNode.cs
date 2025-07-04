@@ -9,10 +9,10 @@ namespace Task.Switch.Structure.BT.Composites
             foreach (Node<T> child in m_Children)
             {
                 result = child.Execute();
-                if (result == NodeResult.Failure) 
+                if (result == NodeResult.Failure)
                     continue;
-                else 
-                    break;              
+                else
+                    break;
             }
             return result;
         }

@@ -24,7 +24,7 @@ namespace Task.Switch.Structure.BT
             Parameter = para;
             PushNodeToTree(m_Root);
         }
-  
+
         public void Reset()
         {
             m_Root?.Reset();

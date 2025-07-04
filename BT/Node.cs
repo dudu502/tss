@@ -1,4 +1,5 @@
 ﻿using System;
+using Task.Switch.Structure.BT.Decorators;
 
 namespace Task.Switch.Structure.BT
 {
@@ -59,23 +60,13 @@ namespace Task.Switch.Structure.BT
         }    
     }   
 
-    public sealed class RootNode<T> : Node<T>
+    public sealed class RootNode<T> : DecoratorNode<T>
     {
-        private Node<T> m_Child;
-        public override void AddChild(Node<T> node)
-        {
-            m_Child = node;
-        }
         protected override NodeResult GetResult()
         {
-            if(m_Child != null)
+            if (m_Child != null)
                 return m_Child.Execute();
             return NodeResult.Success;
-        }
-        public override void Reset()
-        {
-            base.Reset();
-            m_Child?.Reset();
         }
     }
 }

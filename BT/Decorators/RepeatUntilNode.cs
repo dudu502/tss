@@ -3,8 +3,8 @@ namespace Task.Switch.Structure.BT.Decorators
 {
     public class RepeatUntilNode<T> : RepeatNode<T>
     {
-        private readonly Func<T,bool> m_RepeatUntil;
-        public RepeatUntilNode(Func<T,bool> repeatUtil)
+        private readonly Func<T, bool> m_RepeatUntil;
+        public RepeatUntilNode(Func<T, bool> repeatUtil)
         {
             m_RepeatUntil = repeatUtil;
         }

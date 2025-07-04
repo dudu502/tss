@@ -130,8 +130,8 @@ namespace Task.Switch.Structure.FSM
     {
         StateMachine<TObject> m_Parent;
         public int Id { get; private set; }
-        public string Tag { get; protected set; }
         public int PreviousId;
+        protected string m_Tag;
         protected Action<TObject> m_OnInitialize;
         protected Action<TObject> m_OnEnter;
         protected Action<TObject> m_OnUpdate;
@@ -232,10 +232,18 @@ namespace Task.Switch.Structure.FSM
 
         public StateBase<TObject> SetTag(string tag)
         {
-            Tag = tag;
+            m_Tag = tag;
             return this;
         }
 
+        public string GetTag()
+        {
+            return m_Tag;
+        }
+        public virtual void GetTags(List<string> tags)
+        {
+            tags.Add(m_Tag);
+        }
         public virtual void Dispatch(string evtType, object evt)
         {
             return;
@@ -248,7 +256,7 @@ namespace Task.Switch.Structure.FSM
 
         public virtual void Dispose()
         {
-            Tag = null;
+            m_Tag = null;
             m_OnEarlyUpdate = null;
             m_OnEnter = null;
             m_OnUpdate = null;
@@ -456,17 +464,14 @@ namespace Task.Switch.Structure.FSM
 
         public new StateMachine<TObject> SetTag(string tag)
         {
-            Tag = tag;
+            m_Tag = tag;
             return this;
         }
 
-        public void GetTags(List<string> tags)
+        public override void GetTags(List<string> tags)
         {
-            tags.Add(Tag);
-            if (m_Current is StateMachine<TObject> machine)
-                machine.GetTags(tags);
-            else
-                tags.Add(m_Current.Tag);
+            base.GetTags(tags);
+            m_Current.GetTags(tags);
         }
 
         public override void Dispose()

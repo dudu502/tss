@@ -15,7 +15,7 @@
         }
         protected override NodeResult GetResult()
         {
-            if(m_Children.Count == 0)return NodeResult.Failure;
+            if (m_Children.Count == 0) return NodeResult.Failure;
             Node<T> child = m_Children[m_CurrentIndex];
             switch (child.Execute())
             {

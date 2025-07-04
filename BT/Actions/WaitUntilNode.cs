@@ -4,8 +4,8 @@ namespace Task.Switch.Structure.BT.Actions
 {
     public class WaitUntilNode<T> : ActionNode<T>
     {
-        private readonly Func<T,bool> m_WaitUntilFunc;
-        public WaitUntilNode(Func<T,bool> waitUntil)
+        private readonly Func<T, bool> m_WaitUntilFunc;
+        public WaitUntilNode(Func<T, bool> waitUntil)
         {
             m_WaitUntilFunc = waitUntil;
         }
