@@ -61,7 +61,7 @@ namespace Task.Switch.Structure.FSM
             {
                 result = m_Validate(param);
                 if (StateMachineDebug.Log != null && StateMachineDebug.LogFilter.OnValidate == (StateMachineDebug.Filter & StateMachineDebug.LogFilter.OnValidate))
-                    StateMachineDebug.Log($"Transition:{Id}->{ToId} {nameof(OnValidate)} Validate:{result} Parameters:{param}");
+                    StateMachineDebug.Log($"Transition:{Id}->{ToId} Tag:{m_State.GetTag() ?? "<null>"} {nameof(OnValidate)} Validate:{result} Parameters:{param}");
             }
             return result;
         }
@@ -72,7 +72,7 @@ namespace Task.Switch.Structure.FSM
             {
                 m_Transfer(param);
                 if (StateMachineDebug.Log != null && StateMachineDebug.LogFilter.OnTransfer == (StateMachineDebug.Filter & StateMachineDebug.LogFilter.OnTransfer))
-                    StateMachineDebug.Log($"Transition:{Id}->{ToId} {nameof(OnTransfer)} Parameters:{param}");
+                    StateMachineDebug.Log($"Transition:{Id}->{ToId} Tag:{m_State.GetTag() ?? "<null>"} {nameof(OnTransfer)} Parameters:{param}");
             }
         }
 
@@ -83,7 +83,7 @@ namespace Task.Switch.Structure.FSM
             {
                 result = m_Event(param, evt);
                 if (StateMachineDebug.Log != null && StateMachineDebug.LogFilter.OnEvent == (StateMachineDebug.Filter & StateMachineDebug.LogFilter.OnEvent))
-                    StateMachineDebug.Log($"Event:{Id}->{ToId} {nameof(OnEvent)} Event:{result} Parameters:{param} EventType:{EventType} EventData:{evt ?? "<null>"}");
+                    StateMachineDebug.Log($"Event:{Id}->{ToId} Tag:{m_State.GetTag() ?? "<null>"} {nameof(OnEvent)} Event:{result} Parameters:{param} EventType:{EventType} EventData:{evt ?? "<null>"}");
             }
             return result;
         }
@@ -171,7 +171,7 @@ namespace Task.Switch.Structure.FSM
             {
                 m_OnEnter(param);
                 if (StateMachineDebug.Log != null && StateMachineDebug.LogFilter.OnEnter == (StateMachineDebug.Filter & StateMachineDebug.LogFilter.OnEnter))
-                    StateMachineDebug.Log($"StateId:{Id} {nameof(OnEnter)} Parameters:{param}");
+                    StateMachineDebug.Log($"StateId:{Id} Tag:{m_Tag ?? "<null>"} {nameof(OnEnter)} Parameters:{param}");
             }
         }
         internal virtual void OnEarlyUpdate(TObject param)
@@ -180,7 +180,7 @@ namespace Task.Switch.Structure.FSM
             {
                 m_OnEarlyUpdate(param);
                 if (StateMachineDebug.Log != null && StateMachineDebug.LogFilter.OnEarlyUpdate == (StateMachineDebug.Filter & StateMachineDebug.LogFilter.OnEarlyUpdate))
-                    StateMachineDebug.Log($"StateId:{Id} {nameof(OnEarlyUpdate)} Parameters:{param}");
+                    StateMachineDebug.Log($"StateId:{Id} Tag:{m_Tag ?? "<null>"} {nameof(OnEarlyUpdate)} Parameters:{param}");
             }
         }
         internal virtual void OnUpdate(TObject param)
@@ -189,7 +189,7 @@ namespace Task.Switch.Structure.FSM
             {
                 m_OnUpdate(param);
                 if (StateMachineDebug.Log != null && StateMachineDebug.LogFilter.OnUpdate == (StateMachineDebug.Filter & StateMachineDebug.LogFilter.OnUpdate))
-                    StateMachineDebug.Log($"StateId:{Id} {nameof(OnUpdate)} Parameters:{param}");
+                    StateMachineDebug.Log($"StateId:{Id} Tag:{m_Tag ?? "<null>"} {nameof(OnUpdate)} Parameters:{param}");
             }
         }
         internal virtual void OnExit(TObject param)
@@ -198,7 +198,7 @@ namespace Task.Switch.Structure.FSM
             {
                 m_OnExit(param);
                 if (StateMachineDebug.Log != null && StateMachineDebug.LogFilter.OnExit == (StateMachineDebug.Filter & StateMachineDebug.LogFilter.OnExit))
-                    StateMachineDebug.Log($"StateId:{Id} {nameof(OnExit)} Parameters:{param}");
+                    StateMachineDebug.Log($"StateId:{Id} Tag:{m_Tag ?? "<null>"} {nameof(OnExit)} Parameters:{param}");
             }
         }
         internal virtual void OnInitialize(TObject param)
@@ -207,7 +207,7 @@ namespace Task.Switch.Structure.FSM
             {
                 m_OnInitialize(param);
                 if (StateMachineDebug.Log != null && StateMachineDebug.LogFilter.OnInitialize == (StateMachineDebug.Filter & StateMachineDebug.LogFilter.OnInitialize))
-                    StateMachineDebug.Log($"StateId:{Id} {nameof(OnInitialize)} Parameters:{param}");
+                    StateMachineDebug.Log($"StateId:{Id} Tag:{m_Tag ?? "<null>"} {nameof(OnInitialize)} Parameters:{param}");
             }
         }
         public StateBase(int id, StateMachine<TObject> stateMachine)

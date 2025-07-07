@@ -12,6 +12,7 @@ namespace Task.Switch.Structure.BT
         private Action<T> m_Stop;
         private Action<T> m_Update;
         protected Func<T,NodeResult> m_NodeResult;
+        protected string m_Tag;
         public Node<T> Start(Action<T> start) { m_Start = start; return this; }
         public Node<T> Stop(Action<T> stop) { m_Stop = stop; return this; }
         public Node<T> Update(Action<T> update) { m_Update = update; return this; }
@@ -21,16 +22,43 @@ namespace Task.Switch.Structure.BT
             if (!m_Started)
             {
                 OnStart();
+
+                if (BehaviourTreeDebug.Log != null && (BehaviourTreeDebug.Filter & BehaviourTreeDebug.LogFilter.OnStart) == BehaviourTreeDebug.LogFilter.OnStart)
+                    BehaviourTreeDebug.Log($"Node:{GetType().Name} Tag:{m_Tag ?? "<null>"} OnStart Parameter:{Tree.Parameter}");
+
                 m_Started = true;
             }
             OnUpdate();
+
+            if (BehaviourTreeDebug.Log != null && (BehaviourTreeDebug.Filter & BehaviourTreeDebug.LogFilter.OnUpdate) == BehaviourTreeDebug.LogFilter.OnUpdate)
+                BehaviourTreeDebug.Log($"Node:{GetType().Name} Tag:{m_Tag ?? "<null>"} OnUpdate Parameter:{Tree.Parameter}");
+
             Result = GetResult();
+
+            if (BehaviourTreeDebug.Log != null && (BehaviourTreeDebug.Filter & BehaviourTreeDebug.LogFilter.OnResult) == BehaviourTreeDebug.LogFilter.OnResult)
+                BehaviourTreeDebug.Log($"Node:{GetType().Name} Tag:{m_Tag ?? "<null>"} Result:{Result} Parameter:{Tree.Parameter}");
+
             if (Result == NodeResult.Success || Result == NodeResult.Failure)
             {
                 OnStop();
+
+                if (BehaviourTreeDebug.Log != null && (BehaviourTreeDebug.Filter & BehaviourTreeDebug.LogFilter.OnStop) == BehaviourTreeDebug.LogFilter.OnStop)
+                    BehaviourTreeDebug.Log($"Node:{GetType().Name} Tag:{m_Tag ?? "<null>"} OnStop Parameter:{Tree.Parameter}");
+
                 m_Started = false;
             }
             return Result;
+        }
+
+        public Node<T> SetTag(string tag)
+        {
+            m_Tag = tag;
+            return this;
+        }
+
+        public string GetTag()
+        {
+            return m_Tag;
         }
 
         public virtual void AddChild(Node<T> node)

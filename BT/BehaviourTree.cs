@@ -13,6 +13,22 @@ namespace Task.Switch.Structure.BT
         Failure = 2,
         Success = 4
     }
+
+    public class BehaviourTreeDebug
+    {
+        public enum LogFilter
+        {
+            Nothing = 0,
+            OnStart = 1,
+            OnUpdate = 2,
+            OnStop = 4,
+            OnResult = 8,
+            Everything = OnStart | OnUpdate | OnStop | OnResult,
+        }
+        public static Action<string> Log;
+        public static LogFilter Filter = LogFilter.Nothing;
+    }
+
     public class BehaviourTree<T>
     {
         private readonly RootNode<T> m_Root = new RootNode<T>();
@@ -37,71 +53,71 @@ namespace Task.Switch.Structure.BT
             return m_TreeState;
         }
 
-        public BehaviourTree<T> Repeat()
+        public BehaviourTree<T> Repeat(string tag = null)
         {
-            PushNodeToTree(new RepeatNode<T>());
+            PushNodeToTree(new RepeatNode<T>().SetTag(tag));
             return this;
         }
-        public BehaviourTree<T> Success()
+        public BehaviourTree<T> Success(string tag = null)
         {
-            PushNodeToTree(new ReturnSuccessNode<T>());
+            PushNodeToTree(new ReturnSuccessNode<T>().SetTag(tag));
             return this;
         }
-        public BehaviourTree<T> Failure()
+        public BehaviourTree<T> Failure(string tag = null)
         {
-            PushNodeToTree(new ReturnFailureNode<T>());
+            PushNodeToTree(new ReturnFailureNode<T>().SetTag(tag));
             return this;
         }
-        public BehaviourTree<T> Invert()
+        public BehaviourTree<T> Invert(string tag = null)
         {
-            PushNodeToTree(new InverterNode<T>());
+            PushNodeToTree(new InverterNode<T>().SetTag(tag));
             return this;
         }
-        public BehaviourTree<T> RepeatUntil(Func<T, bool> repeatUntil)
+        public BehaviourTree<T> RepeatUntil(Func<T, bool> repeatUntil, string tag = null)
         {
-            PushNodeToTree(new RepeatUntilNode<T>(repeatUntil));
+            PushNodeToTree(new RepeatUntilNode<T>(repeatUntil).SetTag(tag));
             return this;
         }
-        public BehaviourTree<T> Sequence()
+        public BehaviourTree<T> Sequence(string tag = null)
         {
-            PushNodeToTree(new SequencerNode<T>());
+            PushNodeToTree(new SequencerNode<T>().SetTag(tag));
             return this;
         }
-        public BehaviourTree<T> Select()
+        public BehaviourTree<T> Select(string tag = null)
         {
-            PushNodeToTree(new SelectorNode<T>());
+            PushNodeToTree(new SelectorNode<T>().SetTag(tag));
             return this;
         }
-        public BehaviourTree<T> Parallel()
+        public BehaviourTree<T> Parallel(string tag = null)
         {
-            PushNodeToTree(new ParallelNode<T>());
+            PushNodeToTree(new ParallelNode<T>().SetTag(tag));
             return this;
         }
-        public BehaviourTree<T> ParallelSelect()
+        public BehaviourTree<T> ParallelSelect(string tag = null)
         {
-            PushNodeToTree(new ParallelSelectNode<T>());
+            PushNodeToTree(new ParallelSelectNode<T>().SetTag(tag));
             return this;
         }
-        public BehaviourTree<T> ParallelSequence()
+        public BehaviourTree<T> ParallelSequence(string tag = null)
         {
-            PushNodeToTree(new ParallelSequencerNode<T>());
+            PushNodeToTree(new ParallelSequencerNode<T>().SetTag(tag));
             return this;
         }
-        public Node<T> Do()
+        public Node<T> Do(string tag = null)
         {
-            return PushNodeToTree(new GenericNode<T>());
+            return PushNodeToTree(new GenericNode<T>().SetTag(tag));
         }
-        public Node<T> WaitTime(int ms)
+        public Node<T> WaitTime(int ms, string tag = null)
         {
-            return PushNodeToTree(new WaitTimeNode<T>(ms));
+            return PushNodeToTree(new WaitTimeNode<T>(ms).SetTag(tag));
         }
-        public Node<T> WaitTurn(int frameCount)
+        public Node<T> WaitTurn(int frameCount, string tag = null)
         {
-            return PushNodeToTree(new WaitTurnNode<T>(frameCount));
+            return PushNodeToTree(new WaitTurnNode<T>(frameCount).SetTag(tag));
         }
-        public Node<T> WaitUntil(Func<T, bool> waitFunc)
+        public Node<T> WaitUntil(Func<T, bool> waitFunc, string tag = null)
         {
-            return PushNodeToTree(new WaitUntilNode<T>(waitFunc));
+            return PushNodeToTree(new WaitUntilNode<T>(waitFunc).SetTag(tag));
         }
         public BehaviourTree<T> End()
         {
