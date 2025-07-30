@@ -286,6 +286,8 @@ var fsm = new StateMachine<Character>(character)
 | `TransitionBase<TObject>` | 转移逻辑，包含条件、事件、目标 |
 | `StateMachineDebug` | 调试工具，控制日志输出 |
 
+---
+
 # 行为树框架 API 文档 (Readme)
 
 本框架提供了一个轻量级、类型安全且易于使用的 C# 行为树（Behavior Tree）实现。其核心特点是**流畅的链式 API（Fluent API）**，允许您以声明式的方式快速构建复杂的行为逻辑。
