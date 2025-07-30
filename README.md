@@ -46,7 +46,7 @@ stateMachine
     .State(GameState.Idle)
         .Enter(_ => Console.WriteLine("进入空闲状态"))
         .Update(_ => Console.WriteLine("空闲中..."))
-        .Transition(() => Input.GetButtonDown("Start")) // 条件转移
+        .Transition(_ => Input.GetButtonDown("Start")) // 条件转移
             .To(GameState.Running)
             .Transfer(_ => Console.WriteLine("开始游戏！"))
         .End()
@@ -161,7 +161,7 @@ stateMachine.State(GameState.Running)
 
 ```csharp
 .Select(GameState.Running, 
-        () => Input.GetKeyDown(KeyCode.P), 
+        (param) => Input.GetKeyDown(KeyCode.P), 
         GameState.Paused)
 ```
 
@@ -220,7 +220,7 @@ var attackMachine = playerFSM.Machine(PlayerState.Attacking)
 // 主状态机跳转到子状态机
 playerFSM
     .State(PlayerState.Idle)
-    .Transition(() => Input.Attack())
+    .Transition(player => Input.Attack())
         .To(PlayerState.Attacking);
 ```
 
@@ -249,13 +249,13 @@ stateMachine.Dispose();
 var fsm = new StateMachine<Character>(character)
     .State(CharacterState.Idle)
         .Enter(c => c.Anim("idle"))
-        .Transition(() => c.MoveInput != Vector2.zero)
+        .Transition(c => c.MoveInput != Vector2.zero)
             .To(CharacterState.Walking)
         .End()
 
     .State(CharacterState.Walking)
         .Enter(c => c.Anim("walk"))
-        .Transition(() => c.MoveInput == Vector2.zero)
+        .Transition(c => c.MoveInput == Vector2.zero)
             .To(CharacterState.Idle)
         .Event("DASH", (_, __) => true)
             .To(CharacterState.Dashing)
