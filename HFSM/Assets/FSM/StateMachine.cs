@@ -93,11 +93,13 @@ namespace Task.Switch.Structure.FSM
             m_Transfer = transfer;
             return this;
         }
+
         public StateBase<TObject> Return()
         {
             ToId = -1;
             return m_State;
         }
+        
         public StateBase<TObject> To<TState>(TState toId) where TState : Enum
         {
             ToId = Convert.ToInt32(toId);
@@ -149,16 +151,19 @@ namespace Task.Switch.Structure.FSM
             m_OnEnter = enter;
             return this;
         }
+
         public virtual StateBase<TObject> Update(Action<TObject> update)
         {
             m_OnUpdate = update;
             return this;
         }
+
         public virtual StateBase<TObject> EarlyUpdate(Action<TObject> earlyUpdate)
         {
             m_OnEarlyUpdate = earlyUpdate;
             return this;
         }
+
         public virtual StateBase<TObject> Exit(Action<TObject> exit)
         {
             m_OnExit = exit;
@@ -174,6 +179,7 @@ namespace Task.Switch.Structure.FSM
                     StateMachineDebug.Log($"StateId:{Id} Tag:{m_Tag ?? "<null>"} {nameof(OnEnter)} Parameters:{param}");
             }
         }
+
         internal virtual void OnEarlyUpdate(TObject param)
         {
             if (m_OnEarlyUpdate != null)
@@ -183,6 +189,7 @@ namespace Task.Switch.Structure.FSM
                     StateMachineDebug.Log($"StateId:{Id} Tag:{m_Tag ?? "<null>"} {nameof(OnEarlyUpdate)} Parameters:{param}");
             }
         }
+
         internal virtual void OnUpdate(TObject param)
         {
             if (m_OnUpdate != null)
@@ -192,6 +199,7 @@ namespace Task.Switch.Structure.FSM
                     StateMachineDebug.Log($"StateId:{Id} Tag:{m_Tag ?? "<null>"} {nameof(OnUpdate)} Parameters:{param}");
             }
         }
+
         internal virtual void OnExit(TObject param)
         {
             if (m_OnExit != null)
@@ -201,6 +209,7 @@ namespace Task.Switch.Structure.FSM
                     StateMachineDebug.Log($"StateId:{Id} Tag:{m_Tag ?? "<null>"} {nameof(OnExit)} Parameters:{param}");
             }
         }
+
         internal virtual void OnInitialize(TObject param)
         {
             if (m_OnInitialize != null)
@@ -210,6 +219,7 @@ namespace Task.Switch.Structure.FSM
                     StateMachineDebug.Log($"StateId:{Id} Tag:{m_Tag ?? "<null>"} {nameof(OnInitialize)} Parameters:{param}");
             }
         }
+
         public StateBase(int id, StateMachine<TObject> stateMachine)
         {
             Id = id;
@@ -240,10 +250,12 @@ namespace Task.Switch.Structure.FSM
         {
             return m_Tag;
         }
+
         public virtual void GetTags(List<string> tags)
         {
             tags.Add(m_Tag);
         }
+
         public virtual void Dispatch(string evtType, object evt)
         {
             return;
@@ -287,6 +299,12 @@ namespace Task.Switch.Structure.FSM
         public StateMachine(TObject param) : base(int.MinValue, null)
         {
             _Initialize(param);
+        }
+
+        public void Reset(int id)
+        {
+           if (m_States.ContainsKey(id))
+                m_Current = m_States[id];
         }
 
         public void Reset()
@@ -400,6 +418,7 @@ namespace Task.Switch.Structure.FSM
             base.OnUpdate(param);
             Update();
         }
+
         public int GetCurrentId()
         {
             return m_Current.Id;
