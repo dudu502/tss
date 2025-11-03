@@ -364,7 +364,11 @@ namespace Task.Switch.Structure.FSM
         public StateMachine<TObject> Build()
         {
             foreach (StateBase<TObject> state in m_States.Values)
+            {
+                if (!IsValidStateForTransition(state.Id))
+                    throw new ArgumentNullException($"No Transitions. StateId:{state.Id}");
                 state.OnInitialize(m_Parameter);
+            }
             return this;
         }
 
@@ -441,6 +445,11 @@ namespace Task.Switch.Structure.FSM
         {
             transitions = null;
             return m_Current.Id != StateMachineConst.EXIT && m_Transitions.TryGetValue(m_Current.Id, out transitions);
+        }
+
+        bool IsValidStateForTransition(int stateId)
+        {
+            return stateId != StateMachineConst.EXIT && m_Transitions.ContainsKey(stateId);
         }
 
         public void Dispatch(string evtType)
