@@ -412,7 +412,7 @@ namespace Task.Switch.Structure.FSM
 
         internal override void OnExit(TObject param)
         {
-            m_Current.OnExit(m_Parameter);
+            m_Current.OnExit(param);
             Reset();
             base.OnExit(param);
         }
