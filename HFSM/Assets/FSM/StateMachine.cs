@@ -303,8 +303,10 @@ namespace Task.Switch.Structure.FSM
 
         public void Reset(int id)
         {
-           if (m_States.ContainsKey(id))
+            if (m_States.ContainsKey(id))
                 m_Current = m_States[id];
+            else
+                Reset();
         }
 
         public void Reset()
